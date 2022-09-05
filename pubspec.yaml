@@ -1,0 +1,16 @@
+name: griddle
+description: Makes creating terminal-based UIs and games more accessible and more fun!
+version: 0.0.0
+homepage: https://github.com/matanlurey/griddle
+
+environment:
+  sdk: ">=2.17.0 <3.0.0"
+
+dependencies:
+  meta: ^1.7.0
+  neoansi: ^0.2.1
+
+dev_dependencies:
+  coverage: ^1.5.0
+  neodart: ^0.1.1
+  test: ^1.21.4
