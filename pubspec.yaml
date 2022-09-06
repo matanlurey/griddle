@@ -11,6 +11,7 @@ dependencies:
   neoansi: ^0.2.1
 
 dev_dependencies:
+  color: ^3.0.0
   coverage: ^1.5.0
   neodart: ^0.1.1
   test: ^1.21.4
