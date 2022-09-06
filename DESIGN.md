@@ -30,6 +30,15 @@ There are 3 "layers" necessary to build a terminal-based UI framework:
 
    **Out of scope** of this package, to be built on top of `griddle`.
 
+   Some examples of what this might look like:
+
+   - [`brick`, a Haskell terminal user interface toolkit][brick]
+   - [`bubbletea`, a fun, functional, and stateful way to build terminal apps][bubbletea]
+   - [`gruid`, grid-based applications in Go][gruid]
+
+[brick]: https://github.com/jtdaugherty/brick
+[bubbletea]: https://github.com/charmbracelet/bubbletea
+[gruid]: https://github.com/anaseto/gruid
 [neoansi]: https://pub.dev/packages/neoansi
 
 ## Compatibility

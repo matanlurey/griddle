@@ -29,12 +29,10 @@ graphics framework for lower fidelity games or apps.
 
 It is _inspired_ by:
 
-- [`gruid`, grid-based applications in Go][gruid]
 - [`tcell`, a Go package that provides cell-based views for terminals][tcell]
 - [`termbox`, a minimalistic API to write text-based UIs][termbox]
 - [`termpixels`, the terminal as a character-cell matrix][termpixels]
 
-[gruid]: https://github.com/anaseto/gruid
 [tcell]: https://github.com/gdamore/tcell
 [termbox]: https://github.com/nsf/termbox-go
 [termpixels]: https://github.com/loganzartman/termpixels
@@ -47,6 +45,10 @@ a 2D _grid_ of character cells**.
 
 Like [`termpixels`][termpixels], this project makes the terminal more
 accessible and more fun, but in Dart!
+
+> **NOTE**: To learn more about the design of `griddle`, view [DESIGN.md][].
+
+[design.md]: DESIGN.md
 
 ## Usage
 
