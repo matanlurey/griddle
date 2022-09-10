@@ -421,6 +421,7 @@ class _StdioAnsiTerminal extends Terminal with AnsiTerminal {
   void flush() {
     _stdout.write(outSink);
     outSink.clear();
+    _stdout.flush();
   }
 
   @override

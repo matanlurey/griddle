@@ -52,7 +52,38 @@ accessible and more fun, but in Dart!
 
 ## Usage
 
-TBD.
+![Example app running](https://user-images.githubusercontent.com/168174/189504284-4e09879e-75bc-4916-afe0-998f1fa0e5ae.gif)
+
+```dart
+import 'dart:async';
+import 'dart:math' as math;
+
+import 'package:griddle/griddle.dart';
+
+void main() {
+  final screen = Screen.terminal(Terminal.usingAnsiStdio());
+  const string = 'Hello World, from Griddle for Dart!';
+
+  Timer.periodic(const Duration(milliseconds: 1000 ~/ 30), (_) {
+    screen.clear();
+
+    for (var i = 0; i < string.length; i++) {
+      final t = DateTime.now().millisecondsSinceEpoch / 1000;
+      final f = i / string.length;
+      final c = Color.fromHSL(f * 300 + t, 1, 0.5);
+      final x = screen.width ~/ 2 - string.length ~/ 2;
+      final o = math.sin(t * 3 + f * 5) * 2;
+      final y = (screen.height / 2 + o).round();
+
+      screen.setCell(x + i, y, Cell(string[i]).withColor(foreground: c));
+    }
+
+    screen.update();
+  });
+}
+```
+
+(For the full example, see [example/example.dart](example/example.dart))
 
 ## Contributing
 
