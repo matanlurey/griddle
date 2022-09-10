@@ -73,6 +73,30 @@ abstract class Screen {
     }
   }
 
+  /// Sets characters representing [text] to a particular location.
+  void print(
+    String text,
+    int x,
+    int y, {
+    Color? foreground,
+    Color? background,
+  }) {
+    final lines = text.split('\n');
+    for (var i = 0; i < lines.length; i++) {
+      final l = lines[i];
+      for (var n = 0; n < l.length; n++) {
+        if (x + n >= width || y + i >= height) {
+          continue;
+        }
+        setCell(
+          x + n,
+          y + i,
+          Cell(l[n]).withColor(foreground: foreground, background: background),
+        );
+      }
+    }
+  }
+
   /// Returns the cell at the provided [x] and [y] coordinates.
   @nonVirtual
   @useResult
@@ -100,6 +124,20 @@ abstract class Screen {
   /// Height of the screen.
   @nonVirtual
   int get height => _cells.length;
+
+  /// A stream that fires every frame the screen could be updated.
+  ///
+  /// The event value provided ([Duration]) is the time elapsed since the last
+  /// frame was emitted.
+  @nonVirtual
+  Stream<Duration> get onFrame {
+    final stopwatch = Stopwatch()..start();
+    return Stream.periodic(const Duration(milliseconds: 1000 ~/ 30), (_) {
+      final time = stopwatch.elapsed;
+      stopwatch.reset();
+      return time;
+    });
+  }
 }
 
 class _TerminalScreen extends Screen {

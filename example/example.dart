@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:griddle/griddle.dart';
@@ -10,7 +9,7 @@ void main() {
   final terminal = Terminal.usingAnsiStdio();
 
   try {
-    run(Screen.terminal(terminal..hideCursor()));
+    run(Screen.terminal(terminal));
   } finally {
     terminal
       ..resetStyles()
@@ -18,15 +17,9 @@ void main() {
   }
 }
 
-void run(Screen scren) {
-  final screen = Screen.terminal(Terminal.usingAnsiStdio());
+void run(Screen screen) {
   const string = 'Hello World, from Griddle for Dart!';
-
-  final timer = Stopwatch();
-  var elapsedMs = 0;
-
-  Timer.periodic(const Duration(milliseconds: 1000 ~/ 30), (_) {
-    timer.start();
+  screen.onFrame.listen((elapsed) {
     screen.clear();
 
     for (var i = 0; i < string.length; i++) {
@@ -37,17 +30,11 @@ void run(Screen scren) {
       final o = math.sin(t * 3 + f * 5) * 2;
       final y = (screen.height / 2 + o).round();
 
-      screen.setCell(x + i, y, Cell(string[i]).withColor(foreground: c));
+      screen.print(string[i], x + i, y, foreground: c);
     }
 
-    final msText = '${elapsedMs}ms';
-    final yMsPos = screen.height ~/ 2 - 2;
-    for (var i = 0; i < msText.length; i++) {
-      screen.setCell(i, yMsPos, Cell(msText[i]));
-    }
-
-    screen.update();
-    elapsedMs = timer.elapsedMilliseconds;
-    timer.reset();
+    screen
+      ..print('${elapsed.inMilliseconds}ms', 0, screen.height ~/ 2 - 2)
+      ..update();
   });
 }

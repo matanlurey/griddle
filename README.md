@@ -55,7 +55,6 @@ accessible and more fun, but in Dart!
 ![Example app running](https://user-images.githubusercontent.com/168174/189504284-4e09879e-75bc-4916-afe0-998f1fa0e5ae.gif)
 
 ```dart
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:griddle/griddle.dart';
@@ -64,7 +63,7 @@ void main() {
   final screen = Screen.terminal(Terminal.usingAnsiStdio());
   const string = 'Hello World, from Griddle for Dart!';
 
-  Timer.periodic(const Duration(milliseconds: 1000 ~/ 30), (_) {
+  screen.onFrame.listen((_) {
     screen.clear();
 
     for (var i = 0; i < string.length; i++) {
@@ -75,7 +74,7 @@ void main() {
       final o = math.sin(t * 3 + f * 5) * 2;
       final y = (screen.height / 2 + o).round();
 
-      screen.setCell(x + i, y, Cell(string[i]).withColor(foreground: c));
+      screen.print(string[i], x + i, y, foreground: c);
     }
 
     screen.update();
