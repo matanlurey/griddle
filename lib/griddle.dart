@@ -2,8 +2,9 @@ import 'dart:io' as io;
 
 import 'package:meta/meta.dart';
 import 'package:neoansi/neoansi.dart';
+import 'package:neocolor/neocolor.dart';
 
-export 'package:neoansi/neoansi.dart' show Ansi1BitColors, Ansi8BitColors;
+export 'package:neocolor/neocolor.dart' show Color;
 
 /// A screen is the root building block in `griddle`, a 2D _grid_ of cells.
 ///
@@ -120,34 +121,33 @@ class _TerminalScreen extends Screen {
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
         final cell = _cells[i][j];
-        _terminal.resetStyles();
         _writeAnsiColorSequences(cell);
         _terminal.writeByte(cell.character);
       }
 
       _terminal.writeByte(0xa);
     }
+
+    _terminal.flush();
   }
 
   void _writeAnsiColorSequences(Cell cell) {
-    final foreground1BitColor = cell.foreground1BitColor;
-    if (foreground1BitColor != null) {
-      _terminal.setForegroundColor(foreground1BitColor);
-    } else {
-      final foreground8BitColor = cell.foreground8BitColor;
-      if (foreground8BitColor != null) {
-        _terminal.setForegroundColor8(foreground8BitColor);
-      }
+    var wroteSequence = false;
+
+    final foreground = cell.foregroundColor;
+    if (foreground != null) {
+      _terminal.setForegroundColor(foreground);
+      wroteSequence = true;
     }
 
-    final background1BitColor = cell.background1BitColor;
-    if (background1BitColor != null) {
-      _terminal.setBackgroundColor(background1BitColor);
-    } else {
-      final background8BitColor = cell.background8BitColor;
-      if (background8BitColor != null) {
-        _terminal.setBackgroundColor8(background8BitColor);
-      }
+    final background = cell.backgroundColor;
+    if (background != null) {
+      _terminal.setBackgroundColor(background);
+      wroteSequence = true;
+    }
+
+    if (!wroteSequence) {
+      _terminal.resetStyles();
     }
   }
 }
@@ -156,8 +156,8 @@ class _TerminalScreen extends Screen {
 ///
 /// A cell is a simple immutable value-type that is a combination of a:
 /// - [character], which defaults to a space (`' '`).
-/// - background color, either a [background1BitColor] or [background8BitColor].
-/// - foreground color, either a [foreground1BitColor] or [foreground8BitColor].
+/// - [foregroundColor]
+/// - [backgroundColor]
 @immutable
 @sealed
 class Cell {
@@ -166,25 +166,11 @@ class Cell {
   /// Character code to be rendered in this cell.
   final int character;
 
-  /// If provided, the 1-bit color used for styling the [character].
-  ///
-  /// If non-null, [foreground8BitColor] must be `null`.
-  final Ansi1BitColors? foreground1BitColor;
+  /// If provided, the 24-bit RGB color  used for styling the [character].
+  final Color? foregroundColor;
 
-  /// If provided, the 1-bit color used for styling the background.
-  ///
-  /// If non-null, [background8BitColor] must be `null`.
-  final Ansi1BitColors? background1BitColor;
-
-  /// If provided, the 8-bit color used for styling the [character].
-  ///
-  /// If non-null, [foreground1BitColor] must be `null`.
-  final Ansi8BitColors? foreground8BitColor;
-
-  /// If provided, the 8-bit color used for styling the background.
-  ///
-  /// If non-null, [background1BitColor] must be `null`.
-  final Ansi8BitColors? background8BitColor;
+  /// If provided, the 24-bit RGB color used for styling the background.
+  final Color? backgroundColor;
 
   /// Creates a cell that will render the provided [character] string.
   ///
@@ -198,13 +184,13 @@ class Cell {
   ///
   /// If a string is not provided, defaults to a space (`' '`).
   ///
-  /// To add styling, use in conjunction with [withColor] or [withColor8], i.e.:
+  /// To add styling, use in conjunction with [withColor], i.e.:
   /// ```
-  /// Cell('X').withColor(background: Ansi1BitColors.red)
+  /// Cell('X').withColor(background: Color.fromRGB(0xFF, 0x00, 0x00))
   /// ```
   factory Cell([String? character]) {
     if (character == null) {
-      return const Cell._(_$codeSpace, null, null, null, null);
+      return const Cell._(_$codeSpace, null, null);
     }
     if (character.length != 1) {
       throw ArgumentError.value(
@@ -213,7 +199,7 @@ class Cell {
         'Must be a string of exactly length 1, got ${character.length}',
       );
     }
-    return Cell._(character.codeUnitAt(0), null, null, null, null);
+    return Cell._(character.codeUnitAt(0), null, null);
   }
 
   /// Creates a cell that will render the provided [character] code.
@@ -226,25 +212,21 @@ class Cell {
   /// Cell.ofCharacter(0x58)
   /// ```
   ///
-  /// To add styling, use in conjunction with [withColor] or [withColor8], i.e.:
+  /// To add styling, use in conjunction with [withColor], i.e.:
   /// ```
-  /// Cell.ofCharacter(0x58).withColor(background: Ansi1BitColors.red)
+  /// Cell.ofCharacter(0x58).withColor(background: Color.fromRGB(0xFF, 0x00, 0x00))
   /// ```
   Cell.ofCharacter(int character)
       : this._(
           RangeError.checkNotNegative(character, 'character'),
           null,
           null,
-          null,
-          null,
         );
 
   const Cell._(
     this.character,
-    this.foreground1BitColor,
-    this.background1BitColor,
-    this.foreground8BitColor,
-    this.background8BitColor,
+    this.foregroundColor,
+    this.backgroundColor,
   );
 
   @override
@@ -252,71 +234,46 @@ class Cell {
       identical(other, this) ||
       other is Cell &&
           character == other.character &&
-          foreground1BitColor == other.foreground1BitColor &&
-          background1BitColor == other.background1BitColor &&
-          foreground8BitColor == other.foreground8BitColor &&
-          background8BitColor == other.background8BitColor;
+          foregroundColor == other.foregroundColor &&
+          backgroundColor == other.backgroundColor;
 
   @override
   int get hashCode {
     return Object.hash(
       character,
-      foreground1BitColor ?? background1BitColor,
-      foreground8BitColor ?? background8BitColor,
+      foregroundColor,
+      backgroundColor,
     );
   }
 
   /// Returns the cell with 1-bit colors set.
   ///
-  /// An implicit or explcit value of `null` defaults to the current color,
-  /// assuming that 1-bit colors were previously used. Any set 8-bit colors are
-  /// cleared by using this method.
+  /// An implicit or explcit value of `null` defaults to the current color.
   @useResult
   Cell withColor({
-    Ansi1BitColors? foreground,
-    Ansi1BitColors? background,
+    Color? foreground,
+    Color? background,
   }) {
     return Cell._(
       character,
-      foreground ?? foreground1BitColor,
-      background ?? background1BitColor,
-      null,
-      null,
-    );
-  }
-
-  /// Returns the cell with 8-bit colors set.
-  ///
-  /// An implicit or explcit value of `null` defaults to the current color,
-  /// assuming that 8-bit colors were previously used. Any set 1-bit colors are
-  /// cleared by using this method.
-  @useResult
-  Cell withColor8({
-    Ansi8BitColors? foreground,
-    Ansi8BitColors? background,
-  }) {
-    return Cell._(
-      character,
-      null,
-      null,
-      foreground ?? foreground8BitColor,
-      background ?? background8BitColor,
+      foreground ?? foregroundColor,
+      background ?? backgroundColor,
     );
   }
 
   /// Returns the cell with all colors cleared (reset to the default).
   @useResult
-  Cell clearColors() => Cell._(character, null, null, null, null);
+  Cell clearColors() => Cell._(character, null, null);
 
   @override
   String toString() {
-    final foreground = foreground1BitColor ?? foreground8BitColor;
-    final background = background1BitColor ?? background8BitColor;
+    final foreground = foregroundColor;
+    final background = backgroundColor;
     final character = String.fromCharCode(this.character);
     if (foreground == null && background == null) {
       return 'Cell <$character>';
     } else {
-      return 'Cell <$character: f=${foreground?.name} b=${background?.name}>';
+      return 'Cell <$character: f=$foreground b=$background>';
     }
   }
 }
@@ -349,6 +306,9 @@ abstract class Terminal {
   /// Returns the height of the terminal window in characters.
   int get height;
 
+  /// Flushes the output buffer, if any.
+  void flush();
+
   /// Clears the entire output screen.
   void clearScreen();
 
@@ -364,17 +324,15 @@ abstract class Terminal {
   /// Writes the provided [byte] as a character to the terminal output.
   void writeByte(int byte);
 
-  /// Sets subequent text's 1-bit background color.
-  void setBackgroundColor(Ansi1BitColors color, {bool bright = false});
+  /// Sets subequent text's 24-bit RGB background color.
+  ///
+  /// **NOTE**: The 8-bit alpha channel ([Color.alpha]) is ignored.
+  void setBackgroundColor(Color color);
 
-  /// Sets subequent text's 8-bit background color.
-  void setBackgroundColor8(Ansi8BitColors color);
-
-  /// Sets subequent text's 1-bit foreground color.
-  void setForegroundColor(Ansi1BitColors color, {bool bright = false});
-
-  /// Sets subequent text's 8-bit foreground color.
-  void setForegroundColor8(Ansi8BitColors color);
+  /// Sets subequent text's 24-bit RGB foreground color.
+  ///
+  /// **NOTE**: The 8-bit alpha channel ([Color.alpha]) is ignored.
+  void setForegroundColor(Color color);
 }
 
 /// A mix-in that implements most of [Terminal] with ANSI escape sequences.
@@ -430,47 +388,23 @@ mixin AnsiTerminal on Terminal {
 
   @override
   void clearScreen() {
-    // TODO: Determine if we need to split this into 3 methods.
-    _ansiSink
-      ..setCursorX(0)
-      ..setCursorY(0)
-      ..clearScreen();
+    _ansiSink.clearScreen();
   }
 
   @override
-  void hideCursor() {
-    // TODO: Use _ansiSink.hideCursor (https://github.com/neo-dart/neoansi/issues/2).
-    _ansiSink.write('\u001b[?25l');
-  }
+  void hideCursor() => _ansiSink.hideCursor();
 
   @override
-  void showCursor() {
-    // TODO: Use _ansiSink.showCursor (https://github.com/neo-dart/neoansi/issues/2).
-    _ansiSink.write('\u001b[?25h');
-  }
+  void showCursor() => _ansiSink.showCursor();
 
   @override
   void resetStyles() => _ansiSink.resetStyles();
 
   @override
-  void setBackgroundColor(Ansi1BitColors color, {bool bright = false}) {
-    _ansiSink.setBackgroundColor(color, bright: bright);
-  }
+  void setBackgroundColor(Color color) => _ansiSink.setBackgroundColor24(color);
 
   @override
-  void setBackgroundColor8(Ansi8BitColors color) {
-    _ansiSink.setBackgroundColor8(color);
-  }
-
-  @override
-  void setForegroundColor(Ansi1BitColors color, {bool bright = false}) {
-    _ansiSink.setForegroundColor(color, bright: bright);
-  }
-
-  @override
-  void setForegroundColor8(Ansi8BitColors color) {
-    _ansiSink.setForegroundColor8(color);
-  }
+  void setForegroundColor(Color color) => _ansiSink.setForegroundColor24(color);
 }
 
 /// A simple ANSI supported [Terminal] that uses [io.Stdin]/[io.Stdout].
@@ -481,7 +415,13 @@ class _StdioAnsiTerminal extends Terminal with AnsiTerminal {
   _StdioAnsiTerminal(this._stdin, this._stdout) : super.base();
 
   @override
-  StringSink get outSink => _stdout;
+  final StringBuffer outSink = StringBuffer();
+
+  @override
+  void flush() {
+    _stdout.write(outSink);
+    outSink.clear();
+  }
 
   @override
   int readByte() => _stdin.readByteSync();

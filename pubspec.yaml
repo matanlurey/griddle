@@ -8,7 +8,8 @@ environment:
 
 dependencies:
   meta: ^1.7.0
-  neoansi: ^0.2.1
+  neoansi: ^0.3.0
+  neocolor: ^0.1.0
 
 dev_dependencies:
   color: ^3.0.0
