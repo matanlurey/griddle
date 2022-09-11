@@ -15,12 +15,21 @@ part of '../griddle.dart';
 /// **NOTE**: In the future, the screen API will also support _input_ (events).
 @sealed
 abstract class Screen extends Buffer {
+  final int _framesPerSecond;
+
   /// Creates a disconnected in-memory screen of initial [width] and [height].
   ///
   /// Virtual screens are internally used for _buffering_, and are also suitable
   /// for _testing_, as well as maintaining a platform independent stateful view
   /// that will later be synchronized to a platform-specific view.
-  Screen(super.width, super.height);
+  Screen(
+    super.width,
+    super.height, {
+    int framesPerSecond = 30,
+  }) : _framesPerSecond = RangeError.checkNotNegative(
+          framesPerSecond,
+          'framesPerSecond',
+        );
 
   /// Creates a screen that interfaces with an external [terminal].
   ///
@@ -34,7 +43,10 @@ abstract class Screen extends Buffer {
   /// ```
   ///
   /// The width and height of the screen are determined by the terminal.
-  factory Screen.terminal(Terminal terminal) = _TerminalScreen;
+  factory Screen.terminal(
+    Terminal terminal, {
+    int framesPerSecond,
+  }) = _TerminalScreen;
 
   /// Given the current state of the buffer, updates an external surface.
   void update();
@@ -46,7 +58,8 @@ abstract class Screen extends Buffer {
   @nonVirtual
   Stream<Duration> get onFrame {
     final stopwatch = Stopwatch()..start();
-    return Stream.periodic(const Duration(milliseconds: 1000 ~/ 30), (_) {
+    final duration = Duration(milliseconds: 1000 ~/ _framesPerSecond);
+    return Stream.periodic(duration, (_) {
       final time = stopwatch.elapsed;
       stopwatch.reset();
       return time;

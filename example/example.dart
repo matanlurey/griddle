@@ -6,19 +6,12 @@ import 'package:griddle/griddle.dart';
 ///
 /// [termpixels]: https://github.com/loganzartman/termpixels
 void main() {
-  final terminal = Terminal.usingAnsiStdio();
-
-  try {
-    run(Screen.terminal(terminal));
-  } finally {
-    terminal
-      ..resetStyles()
-      ..showCursor();
-  }
+  run(Screen.terminal(Terminal.usingAnsiStdio()));
 }
 
 void run(Screen screen) {
   const string = 'Hello World, from Griddle for Dart!';
+
   screen.onFrame.listen((elapsed) {
     screen.clear();
 

@@ -60,7 +60,14 @@ abstract class Terminal {
 class _TerminalScreen extends Screen {
   final Terminal _terminal;
 
-  _TerminalScreen(this._terminal) : super(_terminal.width, _terminal.height) {
+  _TerminalScreen(
+    this._terminal, {
+    int framesPerSecond = 30,
+  }) : super(
+          _terminal.width,
+          _terminal.height,
+          framesPerSecond: framesPerSecond,
+        ) {
     _terminal.hideCursor();
   }
 
