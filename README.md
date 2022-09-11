@@ -12,10 +12,10 @@ graphics framework for lower fidelity games or apps.
 
 [pub_url]: https://pub.dartlang.org/packages/griddle
 [pub_img]: https://img.shields.io/pub/v/griddle.svg
-[gha_url]: https://github.com/neo-dart/griddle/actions
-[gha_img]: https://github.com/neo-dart/griddle/workflows/Dart/badge.svg
-[cov_url]: https://codecov.io/gh/neo-dart/griddle
-[cov_img]: https://codecov.io/gh/neo-dart/griddle/branch/main/graph/badge.svg
+[gha_url]: https://github.com/matanlurey/griddle/actions
+[gha_img]: https://github.com/matanlurey/griddle/workflows/Dart/badge.svg
+[cov_url]: https://codecov.io/gh/matanlurey/griddle
+[cov_img]: https://codecov.io/gh/matanlurey/griddle/branch/main/graph/badge.svg
 [doc_url]: https://www.dartdocs.org/documentation/griddle/latest
 [doc_img]: https://img.shields.io/badge/Documentation-griddle-blue.svg
 [sty_url]: https://pub.dev/packages/neodart
