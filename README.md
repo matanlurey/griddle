@@ -93,11 +93,3 @@ Changes or requests that do not match the following criteria will be rejected:
 4. A somewhat arbitrary bar of "complexity", everything should be _easy to use_.
 
 [code-of-conduct]: https://www.contributor-covenant.org/version/1/4/code-of-conduct/
-
-### Inspiration
-
-Some inspiration/motivational sources elsewhere:
-
-- [`brick`, a haskell TUI](https://github.com/jtdaugherty/brick)
-- [`bubbletea`, a functional Go TUI](https://github.com/charmbracelet/bubbletea)
-- [`gruid`, a modular Go TUI](https://github.com/anaseto/gruid)
