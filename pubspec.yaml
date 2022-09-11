@@ -1,6 +1,6 @@
 name: griddle
 description: Makes creating terminal-based UIs and games more accessible and more fun!
-version: 0.0.0
+version: 0.1.0
 homepage: https://github.com/matanlurey/griddle
 
 environment:

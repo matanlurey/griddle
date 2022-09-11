@@ -4,16 +4,12 @@ Griddle _simplifies_ to concept of creating 2D games or UI applications within
 a 2D-matrix, or _grid_, which in turn makes it a suitable cross-platform
 graphics framework for lower fidelity games or apps.
 
-<!-- ENABLE WHEN PUBLISHED
 [![On pub.dev][pub_img]][pub_url]
 [![Code coverage][cov_img]][cov_url]
 [![Github action status][gha_img]][gha_url]
 [![Dartdocs][doc_img]][doc_url]
--->
-
 [![Style guide][sty_img]][sty_url]
 
-<!-- ENABLE WHEN PUBLISHED
 [pub_url]: https://pub.dartlang.org/packages/griddle
 [pub_img]: https://img.shields.io/pub/v/griddle.svg
 [gha_url]: https://github.com/neo-dart/griddle/actions
@@ -22,8 +18,6 @@ graphics framework for lower fidelity games or apps.
 [cov_img]: https://codecov.io/gh/neo-dart/griddle/branch/main/graph/badge.svg
 [doc_url]: https://www.dartdocs.org/documentation/griddle/latest
 [doc_img]: https://img.shields.io/badge/Documentation-griddle-blue.svg
--->
-
 [sty_url]: https://pub.dev/packages/neodart
 [sty_img]: https://img.shields.io/badge/style-neodart-9cf.svg
 
@@ -86,4 +80,24 @@ void main() {
 
 ## Contributing
 
-TBD.
+**This package welcomes [new issues][issues] and [pull requests][fork].**
+
+[issues]: https://github.com/matanlurey/griddle/issues/new
+[fork]: https://github.com/matanlurey/griddle/fork
+
+Changes or requests that do not match the following criteria will be rejected:
+
+1. Common decency as described by the [Contributor Covenant][code-of-conduct].
+2. Making this library brittle/extensible by other libraries.
+3. Adding platform-specific functionality.
+4. A somewhat arbitrary bar of "complexity", everything should be _easy to use_.
+
+[code-of-conduct]: https://www.contributor-covenant.org/version/1/4/code-of-conduct/
+
+### Inspiration
+
+Some inspiration/motivational sources elsewhere:
+
+- [`brick`, a haskell TUI](https://github.com/jtdaugherty/brick)
+- [`bubbletea`, a functional Go TUI](https://github.com/charmbracelet/bubbletea)
+- [`gruid`, a modular Go TUI](https://github.com/anaseto/gruid)
