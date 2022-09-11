@@ -1,5 +1,5 @@
 name: griddle
-description: Makes creating terminal-based UIs and games more accessible and more fun!
+description: Creating terminal-based UIs and games in Dart should be accessible and fun!
 version: 0.1.0
 homepage: https://github.com/matanlurey/griddle
 
