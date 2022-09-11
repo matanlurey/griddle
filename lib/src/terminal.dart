@@ -60,11 +60,7 @@ abstract class Terminal {
 class _TerminalScreen extends Screen {
   final Terminal _terminal;
 
-  _TerminalScreen(this._terminal)
-      : super._baseNotYetReadyAsPublicApi(
-          _terminal.width,
-          _terminal.height,
-        ) {
+  _TerminalScreen(this._terminal) : super(_terminal.width, _terminal.height) {
     _terminal.hideCursor();
   }
 
@@ -75,7 +71,7 @@ class _TerminalScreen extends Screen {
 
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
-        final cell = _cells[i][j];
+        final cell = get(j, i);
         _writeAnsiColorSequences(cell);
         _terminal.writeByte(cell.character);
       }

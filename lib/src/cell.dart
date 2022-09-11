@@ -9,6 +9,9 @@ part of '../griddle.dart';
 @immutable
 @sealed
 class Cell {
+  /// A "blank" cell, i.e. with a space (`' '`) character.
+  static const blank = Cell._(_$codeSpace, null, null);
+
   static const _$codeSpace = 0x20;
 
   /// Character code to be rendered in this cell.
@@ -38,7 +41,7 @@ class Cell {
   /// ```
   factory Cell([String? character]) {
     if (character == null) {
-      return const Cell._(_$codeSpace, null, null);
+      return blank;
     }
     if (character.length != 1) {
       throw ArgumentError.value(
@@ -94,7 +97,7 @@ class Cell {
     );
   }
 
-  /// Returns the cell with 1-bit colors set.
+  /// Returns the cell with colors set.
   ///
   /// An implicit or explcit value of `null` defaults to the current color.
   @useResult
@@ -107,6 +110,18 @@ class Cell {
       foreground ?? foregroundColor,
       background ?? backgroundColor,
     );
+  }
+
+  /// Returns the cell with a new [character] set.
+  @useResult
+  Cell withCharacter(int character) {
+    return Cell._(character, foregroundColor, backgroundColor);
+  }
+
+  /// Returns the cell with the character cleared (reset to a space).
+  @useResult
+  Cell clearCharacter() {
+    return Cell._(_$codeSpace, foregroundColor, backgroundColor);
   }
 
   /// Returns the cell with all colors cleared (reset to the default).

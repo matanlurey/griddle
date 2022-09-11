@@ -4,7 +4,7 @@ part of '../griddle.dart';
 ///
 /// Screens are _stateful_, and provide a higher-level API to:
 /// - Read and write characters and color effects to individual cells.
-/// - Synchronize the state of the (internal) screen with an external terminal.
+/// - Synchronize the state of the (internal) screen with an external surface.
 ///
 /// There are two provided ways to create a screen:
 /// - [Screen], which creates a disconnected in-memory virtual screen.
@@ -14,34 +14,13 @@ part of '../griddle.dart';
 ///
 /// **NOTE**: In the future, the screen API will also support _input_ (events).
 @sealed
-abstract class Screen {
-  /// Visible in order to allow `extends Screen`.
-  ///
-  /// ```dart
-  /// import 'package:griddle/griddle.dart';
-  ///
-  /// class MyScreen extends Screen {
-  ///   MyScreen() : super.base();
-  ///
-  ///   // Finish implementing Screen API
-  /// }
-  /// ```
-  Screen._baseNotYetReadyAsPublicApi(int width, int height)
-      : _cells = List.generate(
-          height,
-          (_) => List.filled(width, Cell()),
-        );
-
+abstract class Screen extends Buffer {
   /// Creates a disconnected in-memory screen of initial [width] and [height].
   ///
   /// Virtual screens are internally used for _buffering_, and are also suitable
   /// for _testing_, as well as maintaining a platform independent stateful view
   /// that will later be synchronized to a platform-specific view.
-  factory Screen(int width, int height) {
-    RangeError.checkNotNegative(width);
-    RangeError.checkNotNegative(height);
-    throw UnimplementedError();
-  }
+  Screen(super.width, super.height);
 
   /// Creates a screen that interfaces with an external [terminal].
   ///
@@ -57,67 +36,8 @@ abstract class Screen {
   /// The width and height of the screen are determined by the terminal.
   factory Screen.terminal(Terminal terminal) = _TerminalScreen;
 
-  /// Buffered cells for the screen.
-  final List<List<Cell>> _cells;
-
-  /// Clears all cells back to the default (empty) state.
-  void clear() {
-    for (var i = 0; i < height; i++) {
-      _cells[i] = List.filled(width, Cell());
-    }
-  }
-
-  /// Sets characters representing [text] to a particular location.
-  void print(
-    String text,
-    int x,
-    int y, {
-    Color? foreground,
-    Color? background,
-  }) {
-    final lines = text.split('\n');
-    for (var i = 0; i < lines.length; i++) {
-      final l = lines[i];
-      for (var n = 0; n < l.length; n++) {
-        if (x + n >= width || y + i >= height) {
-          continue;
-        }
-        setCell(
-          x + n,
-          y + i,
-          Cell(l[n]).withColor(foreground: foreground, background: background),
-        );
-      }
-    }
-  }
-
-  /// Returns the cell at the provided [x] and [y] coordinates.
-  @nonVirtual
-  @useResult
-  Cell getCell(int x, int y) => _cells[y][x];
-
-  /// Sets the cell at the provided [x] and [y] coordinates to [cell].
-  @nonVirtual
-  void setCell(int x, int y, Cell cell) {
-    _cells[y][x] = cell;
-  }
-
-  /// Updates the cell at the provided [x] and [y] coordinates with [update].
-  @nonVirtual
-  void updateCell(int x, int y, Cell Function(Cell) update) {
-    setCell(x, y, update(getCell(x, y)));
-  }
-
-  /// Override to provide a way to update cells.
+  /// Given the current state of the buffer, updates an external surface.
   void update();
-
-  /// Width of the screen.
-  @nonVirtual
-  int get width => _cells[0].length;
-
-  /// Height of the screen.
-  @nonVirtual
-  int get height => _cells.length;
 
   /// A stream that fires every frame the screen could be updated.
   ///
