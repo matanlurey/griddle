@@ -48,28 +48,28 @@ mixin AnsiTerminal on Terminal {
   @protected
   void writeByte(int byte) => outSink.writeCharCode(byte);
 
-  /// Hidden cached instance of [AnsiSink] used for most commands.
-  late final AnsiSink _ansiSink = AnsiSink.from(outSink);
+  /// Hidden cached instance of [AnsiWriter] used for most commands.
+  late final AnsiWriter _ansi = AnsiWriter.from(outSink);
 
   @override
   void clearScreen() {
-    _ansiSink.clearScreen();
+    _ansi.clearScreen();
   }
 
   @override
-  void hideCursor() => _ansiSink.hideCursor();
+  void hideCursor() => _ansi.hideCursor();
 
   @override
-  void showCursor() => _ansiSink.showCursor();
+  void showCursor() => _ansi.showCursor();
 
   @override
-  void resetStyles() => _ansiSink.resetStyles();
+  void resetStyles() => _ansi.resetStyles();
 
   @override
-  void setBackgroundColor(Color color) => _ansiSink.setBackgroundColor24(color);
+  void setBackgroundColor(Color color) => _ansi.setBackgroundColor24(color);
 
   @override
-  void setForegroundColor(Color color) => _ansiSink.setForegroundColor24(color);
+  void setForegroundColor(Color color) => _ansi.setForegroundColor24(color);
 }
 
 /// A simple ANSI supported [Terminal] that uses [io.Stdin]/[io.Stdout].
