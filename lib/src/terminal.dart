@@ -77,16 +77,17 @@ class _TerminalScreen extends Screen {
     _terminal.clearScreen();
 
     for (var i = 0; i < height; i++) {
+      _terminal.writeByte(0xa);
       for (var j = 0; j < width; j++) {
         final cell = get(j, i);
         _writeAnsiColorSequences(cell);
         _terminal.writeByte(cell.character);
       }
-
-      _terminal.writeByte(0xa);
     }
 
-    _terminal.flush();
+    _terminal
+      ..writeByte(0xa)
+      ..flush();
   }
 
   void _writeAnsiColorSequences(Cell cell) {

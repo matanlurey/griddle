@@ -6,8 +6,7 @@ part of '../griddle.dart';
 /// - Read and write characters and color effects to individual cells.
 /// - Synchronize the state of the (internal) screen with an external surface.
 ///
-/// There are two provided ways to create a screen:
-/// - [Screen], which creates a disconnected in-memory virtual screen.
+/// There is only one provided way to create a screen:
 /// - [Screen.terminal], which creates a screen that interfaces with a terminal.
 ///
 /// However, [Screen] exists as an abstraction: _extend_ and create your own!
@@ -18,10 +17,6 @@ abstract class Screen extends Buffer {
   final int _framesPerSecond;
 
   /// Creates a disconnected in-memory screen of initial [width] and [height].
-  ///
-  /// Virtual screens are internally used for _buffering_, and are also suitable
-  /// for _testing_, as well as maintaining a platform independent stateful view
-  /// that will later be synchronized to a platform-specific view.
   Screen(
     super.width,
     super.height, {
