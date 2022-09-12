@@ -266,7 +266,7 @@ class Buffer {
     for (var i = 0; i < lines.length; i++) {
       final l = lines[i];
       for (var n = 0; n < l.length; n++) {
-        if (x + n <= 0 || x + n >= width || y + i <= 0 || y + i >= height) {
+        if (x + n < 0 || x + n >= width || y + i < 0 || y + i >= height) {
           continue;
         }
         set(
