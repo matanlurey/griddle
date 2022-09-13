@@ -41,9 +41,74 @@ void main() {
       }
 
       expect(
-        buffer.toList().map((c) => String.fromCharCode(c.character)),
-        ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b'],
+        buffer.toDebugString(),
+        '012\n'
+        '345\n'
+        '678\n'
+        '9ab\n',
       );
+    });
+
+    group('fromCells', () {
+      test('should fail with an empty collection', () {
+        expect(() => Buffer.fromCells([], width: 1), throwsArgumentError);
+      });
+
+      test('should fail with a width < 1', () {
+        expect(() => Buffer.fromCells([Cell()], width: 0), throwsArgumentError);
+      });
+
+      test('should fail if collection is not subdividable by width', () {
+        expect(
+          () => Buffer.fromCells([Cell(), Cell()], width: 3),
+          throwsArgumentError,
+        );
+      });
+
+      test('should create a 2x2 buffer from the underlying cells', () {
+        final cells = [Cell(), Cell(), Cell(), Cell()];
+        final buffer = Buffer.fromCells(cells, width: 2);
+
+        // Should have been copied and clearing has no impact.
+        cells.clear();
+        expect(
+          buffer.toDebugString(),
+          '  \n'
+          '  \n',
+        );
+      });
+    });
+
+    group('fromMatrix', () {
+      test('should fail with an empty matrix', () {
+        expect(() => Buffer.fromMatrix([]), throwsArgumentError);
+      });
+
+      test('should fail with inconsistent nested lists', () {
+        expect(
+          () => Buffer.fromMatrix([
+            [Cell(), Cell()],
+            [Cell()]
+          ]),
+          throwsArgumentError,
+        );
+      });
+
+      test('should create a 2x2 buffer from the underlying cells', () {
+        final cells = [
+          [Cell(), Cell()],
+          [Cell(), Cell()]
+        ];
+        final buffer = Buffer.fromMatrix(cells);
+
+        // Should have been copied and clearing has no impact.
+        cells.clear();
+        expect(
+          buffer.toDebugString(),
+          '  \n'
+          '  \n',
+        );
+      });
     });
 
     group('resize', () {
@@ -247,14 +312,10 @@ void main() {
       );
 
       expect(
-        buffer
-            .toMatrix()
-            .map((r) => r.map((c) => String.fromCharCode(c.character))),
-        [
-          [' ', ' ', ' '],
-          [' ', 'X', 'X'],
-          [' ', 'X', 'X'],
-        ],
+        buffer.toDebugString(),
+        '   \n'
+        ' XX\n'
+        ' XX\n',
       );
     });
 
@@ -272,14 +333,10 @@ void main() {
       buffer.print('Hi!', 0, 1);
 
       expect(
-        buffer
-            .toMatrix()
-            .map((r) => r.map((c) => String.fromCharCode(c.character))),
-        [
-          [' ', ' ', ' '],
-          ['H', 'i', '!'],
-          [' ', ' ', ' '],
-        ],
+        buffer.toDebugString(),
+        '   \n'
+        'Hi!\n'
+        '   \n',
       );
     });
 
@@ -289,14 +346,10 @@ void main() {
       buffer.print('Hello', 0, 1);
 
       expect(
-        buffer
-            .toMatrix()
-            .map((r) => r.map((c) => String.fromCharCode(c.character))),
-        [
-          [' ', ' ', ' '],
-          ['H', 'e', 'l'],
-          [' ', ' ', ' '],
-        ],
+        buffer.toDebugString(),
+        '   \n'
+        'Hel\n'
+        '   \n',
       );
     });
   });

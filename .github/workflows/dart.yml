@@ -19,7 +19,7 @@ jobs:
         uses: dart-lang/setup-dart@v1.3
 
       - name: Run tests
-        run: make
+        run: make check
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v3.1.0

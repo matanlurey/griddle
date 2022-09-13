@@ -11,3 +11,6 @@ analyze:
 
 tests:
 	dart run coverage:test_with_coverage
+
+report:
+	genhtml coverage/lcov.info -o coverage/html

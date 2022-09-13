@@ -4,60 +4,74 @@ part of '../griddle.dart';
 ///
 /// Screens are _stateful_, and provide a higher-level API to:
 /// - Read and write characters and color effects to individual cells.
-/// - Synchronize the state of the (internal) screen with an external surface.
+/// - Synchronize the state of the screen buffer with an external display.
 ///
 /// There is only one provided way to create a screen:
-/// - [Screen.terminal], which creates a screen that interfaces with a terminal.
+/// - [Screen.display], which creates a screen that uses a low-level [Display].
 ///
 /// However, [Screen] exists as an abstraction: _extend_ and create your own!
-///
-/// **NOTE**: In the future, the screen API will also support _input_ (events).
 @sealed
-abstract class Screen extends Buffer {
-  final int _framesPerSecond;
-
-  /// Creates a disconnected in-memory screen of initial [width] and [height].
-  Screen(
-    super.width,
-    super.height, {
-    int framesPerSecond = 30,
-  }) : _framesPerSecond = RangeError.checkNotNegative(
-          framesPerSecond,
-          'framesPerSecond',
-        );
-
-  /// Creates a screen that interfaces with an external [terminal].
+abstract class Screen implements Buffer {
+  /// Creates a screen that interfaces with an external [screen].
   ///
-  /// The simplest possible "real" terminal is [Terminal.usingStdio]:
+  /// See [Display.fromAnsiTerminal] and [Display.fromStringBuffer].
+  factory Screen.display(Display screen) = _Screen;
+
+  /// Given the current state of the screen buffer, updates an external surface.
+  ///
+  /// How this implemented might vary, but a typical control may look like:
   /// ```dart
-  /// void main() {
-  ///   final screen = Screen.terminal(Terminal.usingStdio());
-  ///
-  ///   // Use the 'screen' attached to stdin and stdout.
+  /// @override
+  /// void update() {
+  ///   _clearScreen();
+  ///   _forEachCellUpdateScreen();
+  ///   _flushScreenBufferIfAny();
   /// }
   /// ```
-  ///
-  /// The width and height of the screen are determined by the terminal.
-  factory Screen.terminal(
-    Terminal terminal, {
-    int framesPerSecond,
-  }) = _TerminalScreen;
-
-  /// Given the current state of the buffer, updates an external surface.
   void update();
+}
 
-  /// A stream that fires every frame the screen could be updated.
-  ///
-  /// The event value provided ([Duration]) is the time elapsed since the last
-  /// frame was emitted.
-  @nonVirtual
-  Stream<Duration> get onFrame {
-    final stopwatch = Stopwatch()..start();
-    final duration = Duration(milliseconds: 1000 ~/ _framesPerSecond);
-    return Stream.periodic(duration, (_) {
-      final time = stopwatch.elapsed;
-      stopwatch.reset();
-      return time;
-    });
+/// Simple implementation of [Screen] that delegates to a [Display].
+class _Screen extends Buffer implements Screen {
+  final Display _output;
+
+  _Screen(this._output) : super(_output.width, _output.height);
+
+  @override
+  void update() {
+    _output.clearScreen();
+
+    for (var i = 0; i < height; i++) {
+      _output.writeByte(0xa);
+      for (var j = 0; j < width; j++) {
+        final cell = get(j, i);
+        _writeStyles(cell);
+        _output.writeByte(cell.character);
+      }
+    }
+
+    _output
+      ..writeByte(0xa)
+      ..flush();
+  }
+
+  void _writeStyles(Cell cell) {
+    var styled = false;
+
+    final foreground = cell.foregroundColor;
+    if (foreground != null) {
+      _output.setForegroundColor(foreground);
+      styled = true;
+    }
+
+    final background = cell.backgroundColor;
+    if (background != null) {
+      _output.setBackgroundColor(background);
+      styled = true;
+    }
+
+    if (!styled) {
+      _output.resetStyles();
+    }
   }
 }

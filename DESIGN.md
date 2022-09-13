@@ -14,7 +14,7 @@ This doc: an overview of the design and plans around developing `griddle`.
 
 ## Layers
 
-> 🟡 &nbsp;&nbsp;**Planned**
+> 🔵 &nbsp;&nbsp;**Done**: Additional APIs could be added though.
 
 There are 3 "layers" necessary to build a terminal-based UI framework:
 
@@ -43,7 +43,7 @@ There are 3 "layers" necessary to build a terminal-based UI framework:
 
 ## Compatibility
 
-> 🟡 &nbsp;&nbsp;**Planned**
+> 🔵 &nbsp;&nbsp;**Done**: No platform specific libraries are imported.
 
 It should be possible to support all major platforms, including:
 
