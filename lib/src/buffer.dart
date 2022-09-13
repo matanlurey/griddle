@@ -1,6 +1,6 @@
 part of '../griddle.dart';
 
-/// Stores a 2D buffer of cells.
+/// Stores a mutable 2D buffer of cells.
 ///
 /// A buffer maintains a two-dimensional buffer of [Cell] instances, and
 /// provides methods of manipulating them programatically, such as [fill] and
@@ -9,6 +9,9 @@ part of '../griddle.dart';
 /// Virtual buffers are also suitable for _testing_, as well as maintaining a
 /// platform independent stateful view that will later be synchronized to a
 /// platform-specific view.
+///
+/// It is considered invalid to extend, implement, or mix-in this class.
+@sealed
 class Buffer {
   var _cells = const <Cell>[];
   var _width = 0;
@@ -75,7 +78,9 @@ class Buffer {
     );
   }
 
-  /// Creates a new buffer of the specified width and height.
+  /// Creates a new buffer of the specified [width] and [height].
+  ///
+  /// Initial cells are filled in by [initialCell], dafaulting to [Cell.blank].
   Buffer(
     int width,
     int height, {
@@ -117,7 +122,6 @@ class Buffer {
   /// unless [expand] is provided with another instance.
   ///
   /// See [clear] and [fill] for other ways to set cells in bulk.
-  @nonVirtual
   void resize({
     int? width,
     int? height,
@@ -153,21 +157,17 @@ class Buffer {
   }
 
   /// Width of the buffer.
-  @nonVirtual
   int get width => _width;
 
   /// Height of the buffer.
-  @nonVirtual
   int get height => _height;
 
   /// Total number of cells in the buffer.
   ///
   /// Semantically identical to `buffer.width * buffer.height`.
-  @nonVirtual
   int get length => width * height;
 
   /// Returns whetyher [x] and [y] are considered within bounds of the buffer.
-  @nonVirtual
   bool inBounds(int x, int y) => x >= 0 && y >= 0 && x < width && y < height;
 
   /// Converts [x] and [y] to an index within [_cells].
@@ -180,11 +180,9 @@ class Buffer {
   }
 
   /// Returns the cell located at ([x], [y]).
-  @nonVirtual
   Cell get(int x, int y) => _cells[_toIndexChecked(x, y)];
 
   /// Sets the cell located at ([x], [y]) to [value].
-  @nonVirtual
   void set(int x, int y, Cell value) {
     _cells[_toIndexChecked(x, y)] = value;
   }
@@ -207,7 +205,6 @@ class Buffer {
   /// attribute is left unchanged when filling cells.
   ///
   /// Any part of the rectangle that lies outside of the buffer is ignored.
-  @nonVirtual
   void fill({
     required int x,
     required int y,
@@ -239,7 +236,6 @@ class Buffer {
   }
 
   /// Fills the entire screen buffer with the attributes of the given [cell].
-  @nonVirtual
   void clear([Cell cell = Cell.blank]) {
     for (var i = 0; i < height; i++) {
       for (var j = 0; j < width; j++) {
@@ -251,7 +247,6 @@ class Buffer {
   /// Sets character representing [text] to a particular location.
   ///
   /// Characters that would fall out of bounds of the buffer are ignored.
-  @nonVirtual
   void print(
     String text,
     int x,

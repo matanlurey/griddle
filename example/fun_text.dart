@@ -1,3 +1,4 @@
+import 'dart:io' show stdout;
 import 'dart:math' as math;
 
 import 'package:griddle/griddle.dart';
@@ -6,13 +7,21 @@ import 'package:griddle/griddle.dart';
 ///
 /// [termpixels]: https://github.com/loganzartman/termpixels
 void main() {
-  run(Screen.terminal(Terminal.usingAnsiStdio()));
+  run(
+    Screen.output(
+      RawScreen.fromAnsiTerminal(
+        stdout,
+        width: () => stdout.terminalColumns,
+        height: () => stdout.terminalLines,
+      ),
+    ),
+  );
 }
 
 void run(Screen screen) {
   const string = 'Hello World, from Griddle for Dart!';
-
-  screen.onFrame.listen((elapsed) {
+  final frames = Stopwatch()..start();
+  Stream<void>.periodic(const Duration(milliseconds: 1000 ~/ 30)).listen((_) {
     screen.clear();
 
     for (var i = 0; i < string.length; i++) {
@@ -27,7 +36,9 @@ void run(Screen screen) {
     }
 
     screen
-      ..print('${elapsed.inMilliseconds}ms', 0, screen.height ~/ 2 - 2)
+      ..print('${frames.elapsedMilliseconds}ms', 0, screen.height ~/ 2 - 2)
       ..update();
+
+    frames.reset();
   });
 }

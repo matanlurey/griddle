@@ -1,4 +1,5 @@
-import 'dart:math';
+import 'dart:io' show stdout;
+import 'dart:math' show Random;
 
 import 'package:griddle/griddle.dart';
 import 'package:neoargs/neoargs.dart';
@@ -23,12 +24,16 @@ void main(List<String> argv) {
   final seed = args.getOption('seed').optionalOnce() ?? '';
 
   _GameOfLife(
-    Screen.terminal(
-      Terminal.usingAnsiStdio(),
-      framesPerSecond: debug ? 1 : 10,
+    Screen.output(
+      RawScreen.fromAnsiTerminal(
+        stdout,
+        width: () => stdout.terminalColumns,
+        height: () => stdout.terminalLines,
+      ),
     ),
     random: Random(int.tryParse(seed)),
     debugShowNeighborCount: debug,
+    framesPerSecond: debug ? 1 : 10,
   ).run();
 }
 
@@ -50,6 +55,9 @@ class _GameOfLife {
   /// Whether to indicate why cells are growing or living visually.
   final bool _debugShowNeighborCount;
 
+  /// How many frames to render per second.
+  final int _framesPerSecond;
+
   /// A value of `true` indicates a cell, and `false` is empty.
   final List<bool> _living;
 
@@ -58,19 +66,23 @@ class _GameOfLife {
 
   _GameOfLife(
     this._screen, {
+    required int framesPerSecond,
     required Random random,
     bool debugShowNeighborCount = false,
   })  : _living = List.generate(_screen.length, (_) => random.nextBool()),
         _growing = List.filled(_screen.length, false),
-        _debugShowNeighborCount = debugShowNeighborCount;
+        _debugShowNeighborCount = debugShowNeighborCount,
+        _framesPerSecond = framesPerSecond;
 
   int get _rows => _screen.height;
 
   int get _columns => _screen.width;
 
   void run() async {
+    final frames = Duration(milliseconds: 1000 ~/ _framesPerSecond);
+
     // ignore: no_leading_underscores_for_local_identifiers
-    await for (final _ in _screen.onFrame) {
+    await for (final _ in Stream<void>.periodic(frames)) {
       _drawState();
       _updateState();
     }

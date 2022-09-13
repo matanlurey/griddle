@@ -1,5 +1,61 @@
 # CHANGELOG
 
+## 0.3.0
+
+In accordance with our [design](DESIGN.md), any features that are not
+appropriate for a high-level _canvas-like_ API were removed from this package:
+
+- `Screen(framesPerSecond: ...)` and `Screen.terminal(framesPerSecond: ...)`.
+- `<Screen>.onFrame`:
+
+  ```dart
+  // Before
+  final screen = Screen(framesPerSecond: 30);
+  screen.onFrame.listen((_) { /* ... */ })
+
+  // After
+  final screen = Screen();
+  final frames = Stopwatch()..start();
+  Stream.periodic(Duration(milliseconds: 1000 ~/ 30)).listen((_) {
+    final time = frames.elapsed;
+    frames.reset();
+    /* ... */
+  });
+  ```
+
+- `Terminal.usingAnsiStdio({stdin: ...})`:
+
+  ```dart
+  // Before
+  import 'package:griddle/griddle.dart';
+
+  void main() {
+    Screen.terminal(Terminal.usingAnsiStdio());
+  }
+  ```
+
+  ```dart
+  // After
+  import 'dart:io';
+
+  import 'package:griddle/griddle.dart';
+
+  void main() {
+    Screen.output(
+      RawScreen.fromAnsiTerminal(
+        stdout,
+        width: () => stdout.width,
+        height: () => stdout.height,
+      ),
+    );
+  }
+  ```
+
+These changes allow us to focus on just pushing pixels and output, versus
+worrying about other elements of UI, such as the update loop or user input,
+which are better suited to other packages, as well as keeping this package
+completely platform agnostic.
+
 ## 0.2.0
 
 New release with many bug fixes, changes, and [new examples](example/README.md)!

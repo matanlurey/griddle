@@ -1,6 +1,6 @@
 # griddle
 
-Griddle _simplifies_ to concept of creating 2D games or UI applications within
+Griddle _simplifies_ the concept of creating 2D games or UI applications within
 a 2D-matrix, or _grid_, which in turn makes it a suitable cross-platform
 graphics framework for lower fidelity games or apps.
 
@@ -40,7 +40,7 @@ a 2D _grid_ of character cells**.
 Like [`termpixels`][termpixels], this project makes the terminal more
 accessible and more fun, but in Dart!
 
-> **NOTE**: To learn more about the design of `griddle`, view [DESIGN.md][].
+To learn more about `griddle`, read our [design philosophy][design.md].
 
 [design.md]: DESIGN.md
 
@@ -49,15 +49,21 @@ accessible and more fun, but in Dart!
 ![Example app running](https://user-images.githubusercontent.com/168174/189504284-4e09879e-75bc-4916-afe0-998f1fa0e5ae.gif)
 
 ```dart
+import 'dart:io' show stdout;
 import 'dart:math' as math;
 
 import 'package:griddle/griddle.dart';
 
 void main() {
-  final screen = Screen.terminal(Terminal.usingAnsiStdio());
+  final screen = Screen.output(RawScreen.fromAnsiTerminal(
+    stdout,
+    width: () => stdout.terminalColumns,
+    height: () => stdout.terminalLines,
+  ));
+
   const string = 'Hello World, from Griddle for Dart!';
 
-  screen.onFrame.listen((_) {
+  Stream<void>.periodic.listen((_) {
     screen.clear();
 
     for (var i = 0; i < string.length; i++) {
@@ -88,7 +94,7 @@ void main() {
 Changes or requests that do not match the following criteria will be rejected:
 
 1. Common decency as described by the [Contributor Covenant][code-of-conduct].
-2. Making this library brittle/extensible by other libraries.
+2. Making this library brittle.
 3. Adding platform-specific functionality.
 4. A somewhat arbitrary bar of "complexity", everything should be _easy to use_.
 
