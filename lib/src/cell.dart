@@ -128,6 +128,17 @@ class Cell {
   @useResult
   Cell clearColors() => Cell._(character, null, null);
 
+  static String _formatRgb(Color? color) {
+    if (color == null) {
+      return '<NONE>';
+    }
+    final hex = (color.value & 0xFFFFFF)
+        .toRadixString(16)
+        .padLeft(6, '0')
+        .toUpperCase();
+    return '0x$hex';
+  }
+
   @override
   String toString() {
     final foreground = foregroundColor;
@@ -136,7 +147,9 @@ class Cell {
     if (foreground == null && background == null) {
       return 'Cell <$character>';
     } else {
-      return 'Cell <$character: f=$foreground b=$background>';
+      final fs = _formatRgb(foreground);
+      final bs = _formatRgb(background);
+      return 'Cell <$character f=$fs b=$bs>';
     }
   }
 }

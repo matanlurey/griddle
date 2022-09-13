@@ -40,14 +40,15 @@ class Buffer {
       throw ArgumentError.value(width, 'width', 'width must be >= 1');
     }
     final list = List.of(cells, growable: false);
-    final num height = list.length / width;
-    if (height is int) {
+    final divisions = list.length / width;
+    final height = divisions.floor();
+    if (divisions == height) {
       return Buffer._(list, width, height);
     } else {
       throw ArgumentError.value(
         width,
         'width',
-        '${list.length} cells cannot be subdivided by $width',
+        '${list.length} cells cannot be subdivided by $width ($divisions)',
       );
     }
   }
@@ -91,10 +92,16 @@ class Buffer {
       height: height,
       expand: initialCell,
     );
+    // It should be impossible for the following to ever be hit, we only add
+    // the message to make iterating on the buffer class internally easier or
+    // if we create internal subtypes in the future.
+    //
+    // coverage:ignore-start
     assert(
       _cells.isNotEmpty,
       'Cells should represent a non-empty grid: $_cells',
     );
+    // coverage:ignore-end
   }
 
   /// Creates a buffer assuming appropriate checks were already peformed.
@@ -295,5 +302,19 @@ class Buffer {
       for (var y = 0; y < height; y++)
         [for (var x = 0; x < width; x++) _cells[y * width + x]]
     ];
+  }
+
+  /// Returns a plain-text preview of the underlying buffer.
+  ///
+  /// For typical usage see [Screen.display] and [Display.fromStringBuffer].
+  String toDebugString() {
+    final buffer = StringBuffer();
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        buffer.writeCharCode(_cells[y * width + x].character);
+      }
+      buffer.writeln();
+    }
+    return buffer.toString();
   }
 }

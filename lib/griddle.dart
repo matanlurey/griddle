@@ -5,14 +5,14 @@
 /// 2. [Buffer]s, which are painting contexts made up of a 2D grid of [Cell]s.
 /// 3. [Screen]s, which write a [Buffer] to an updateable (external) display.
 ///
-/// [Screen] can be _optionally_ combined with a [RawScreen] for simplicty:
+/// [Screen] can be _optionally_ combined with a [Display] for simplicty:
 /// ```dart
 /// // NOT required, just an example to get running with a few lines of code.
 /// import 'dart:io' show stdout;
 ///
 /// void main() {
-///   final screen = Screen.output(
-///     RawScreen.fromAnsiTerminal(
+///   final screen = Screen.display(
+///     Display.fromAnsiTerminal(
 ///       stdout,
 ///       width: () => stdout.terminalColumns,
 ///       height: () => stdout.terminalLines,
@@ -28,8 +28,8 @@
 /// void main() {
 ///   final buffer = StringBuffer();
 ///
-///   final screen = Screen.output(
-///     RawScreen.fromStringBuffer(
+///   final screen = Screen.display(
+///     Display.fromStringBuffer(
 ///       buffer,
 ///       /* Optionally set width: ... and height: ..., defaults to 80x25 */
 ///     ),
@@ -50,4 +50,4 @@ export 'package:neoansi/neoansi.dart' show Color;
 part 'src/buffer.dart';
 part 'src/cell.dart';
 part 'src/screen.dart';
-part 'src/raw_screen.dart';
+part 'src/display.dart';

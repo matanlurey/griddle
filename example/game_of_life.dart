@@ -24,8 +24,8 @@ void main(List<String> argv) {
   final seed = args.getOption('seed').optionalOnce() ?? '';
 
   _GameOfLife(
-    Screen.output(
-      RawScreen.fromAnsiTerminal(
+    Screen.display(
+      Display.fromAnsiTerminal(
         stdout,
         width: () => stdout.terminalColumns,
         height: () => stdout.terminalLines,

@@ -41,8 +41,8 @@ appropriate for a high-level _canvas-like_ API were removed from this package:
   import 'package:griddle/griddle.dart';
 
   void main() {
-    Screen.output(
-      RawScreen.fromAnsiTerminal(
+    Screen.display(
+      Display.fromAnsiTerminal(
         stdout,
         width: () => stdout.width,
         height: () => stdout.height,
@@ -55,6 +55,8 @@ These changes allow us to focus on just pushing pixels and output, versus
 worrying about other elements of UI, such as the update loop or user input,
 which are better suited to other packages, as well as keeping this package
 completely platform agnostic.
+
+**If this API remains relatively stable, it will (eventually) become `1.0.0`.**
 
 ## 0.2.0
 

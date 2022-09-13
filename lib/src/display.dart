@@ -1,23 +1,23 @@
 part of '../griddle.dart';
 
-/// A raw screen is an optional external "backend" API for use with a screen.
+/// A display is an optional external "backend" API for use with a screen.
 ///
 /// While not necessarily backed by an actual terminal (or terminal emulator),
-/// a [RawScreen] has the minimal amount of APIs needed in order to draw pixels
+/// a [Display] has the minimal amount of APIs needed in order to draw pixels
 /// to a _terminal-like_ backend.
-abstract class RawScreen {
-  /// Visible in order to allow `extends RawScreen`.
+abstract class Display {
+  /// Visible in order to allow `extends Display`.
   ///
   /// ```dart
   /// import 'package:griddle/griddle.dart';
   ///
-  /// class MyRawScreen extends RawScreen {
-  ///   // Finish implementing RawScreen API
+  /// class MyDisplay extends Display {
+  ///   // Finish implementing Display API
   /// }
   /// ```
   ///
   /// @nodoc
-  const RawScreen();
+  const Display();
 
   /// Creates a display that writes ANSI escape codes to a string buffer.
   ///
@@ -26,7 +26,7 @@ abstract class RawScreen {
   /// import 'dart:io' as io;
   ///
   /// void main() {
-  ///   final display = RawScreen.fromAnsiTerminal(
+  ///   final display = Display.fromAnsiTerminal(
   ///     io.stdout,
   ///     width: () => io.stdout.terminalColumns,
   ///     height: () => io.stdout.terminalLines,
@@ -34,23 +34,23 @@ abstract class RawScreen {
   /// }
   /// ```
   ///
-  /// For a display without ANSI escapes, see [RawScreen.fromStringBuffer].
-  factory RawScreen.fromAnsiTerminal(
+  /// For a display without ANSI escapes, see [Display.fromStringBuffer].
+  factory Display.fromAnsiTerminal(
     StringSink output, {
     required int Function() width,
     required int Function() height,
-  }) = _AnsiTerminalRawScreen;
+  }) = _AnsiTerminalDisplay;
 
   /// Creates a minimal display that writes plain text to a string buffer.
   ///
   /// All colors and styling are ignored and [width] and [height] default to
   /// a conservative (and hopefully continuous integration friendly)
   /// `80x24` (unless otherwise provided.)
-  factory RawScreen.fromStringBuffer(
+  factory Display.fromStringBuffer(
     StringBuffer output, {
     int width,
     int height,
-  }) = _UnstyledTextRawScreen;
+  }) = _UnstyledTextDisplay;
 
   /// Returns the width of the output display in characters.
   ///
@@ -94,13 +94,13 @@ abstract class RawScreen {
 /// A raw screen that supports writing to a [StringBuffer].
 ///
 /// No colors or advanced formatting are supported in this implementation.
-class _UnstyledTextRawScreen extends RawScreen {
+class _UnstyledTextDisplay extends Display {
   final StringBuffer _output;
 
   /// Temporarily holds output until [flush] is used to move it to [_output].
   final _bufferedOutput = StringBuffer();
 
-  _UnstyledTextRawScreen(
+  _UnstyledTextDisplay(
     this._output, {
     this.width = 80,
     this.height = 24,
@@ -135,7 +135,7 @@ class _UnstyledTextRawScreen extends RawScreen {
 }
 
 /// A raw screen that supports writing to an ANSI-escape supported terminal.
-class _AnsiTerminalRawScreen extends RawScreen {
+class _AnsiTerminalDisplay extends Display {
   final StringSink _output;
   final int Function() _width;
   final int Function() _height;
@@ -144,7 +144,7 @@ class _AnsiTerminalRawScreen extends RawScreen {
   final _bufferedOutput = StringBuffer();
   late final _ansiOut = AnsiWriter.from(_bufferedOutput);
 
-  _AnsiTerminalRawScreen(
+  _AnsiTerminalDisplay(
     this._output, {
     required int Function() width,
     required int Function() height,

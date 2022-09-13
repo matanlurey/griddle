@@ -55,7 +55,7 @@ import 'dart:math' as math;
 import 'package:griddle/griddle.dart';
 
 void main() {
-  final screen = Screen.output(RawScreen.fromAnsiTerminal(
+  final screen = Screen.display(Display.fromAnsiTerminal(
     stdout,
     width: () => stdout.terminalColumns,
     height: () => stdout.terminalLines,

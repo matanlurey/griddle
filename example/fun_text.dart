@@ -8,8 +8,8 @@ import 'package:griddle/griddle.dart';
 /// [termpixels]: https://github.com/loganzartman/termpixels
 void main() {
   run(
-    Screen.output(
-      RawScreen.fromAnsiTerminal(
+    Screen.display(
+      Display.fromAnsiTerminal(
         stdout,
         width: () => stdout.terminalColumns,
         height: () => stdout.terminalLines,

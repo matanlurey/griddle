@@ -4,26 +4,36 @@ part of '../griddle.dart';
 ///
 /// Screens are _stateful_, and provide a higher-level API to:
 /// - Read and write characters and color effects to individual cells.
-/// - Synchronize the state of the (internal) screen with an external surface.
+/// - Synchronize the state of the screen buffer with an external display.
 ///
 /// There is only one provided way to create a screen:
-/// - [Screen.output], which creates a screen that uses a low-level [RawScreen].
+/// - [Screen.display], which creates a screen that uses a low-level [Display].
 ///
 /// However, [Screen] exists as an abstraction: _extend_ and create your own!
 @sealed
 abstract class Screen implements Buffer {
   /// Creates a screen that interfaces with an external [screen].
   ///
-  /// See [RawScreen.fromAnsiTerminal] and [RawScreen.fromStringBuffer].
-  factory Screen.output(RawScreen screen) = _Screen;
+  /// See [Display.fromAnsiTerminal] and [Display.fromStringBuffer].
+  factory Screen.display(Display screen) = _Screen;
 
-  /// Given the current state of the buffer, updates an external surface.
+  /// Given the current state of the screen buffer, updates an external surface.
+  ///
+  /// How this implemented might vary, but a typical control may look like:
+  /// ```dart
+  /// @override
+  /// void update() {
+  ///   _clearScreen();
+  ///   _forEachCellUpdateScreen();
+  ///   _flushScreenBufferIfAny();
+  /// }
+  /// ```
   void update();
 }
 
-/// Simple implementation of [Screen] that delegates to a [RawScreen].
+/// Simple implementation of [Screen] that delegates to a [Display].
 class _Screen extends Buffer implements Screen {
-  final RawScreen _output;
+  final Display _output;
 
   _Screen(this._output) : super(_output.width, _output.height);
 
@@ -35,7 +45,7 @@ class _Screen extends Buffer implements Screen {
       _output.writeByte(0xa);
       for (var j = 0; j < width; j++) {
         final cell = get(j, i);
-        _writeAnsiColorSequences(cell);
+        _writeStyles(cell);
         _output.writeByte(cell.character);
       }
     }
@@ -45,22 +55,22 @@ class _Screen extends Buffer implements Screen {
       ..flush();
   }
 
-  void _writeAnsiColorSequences(Cell cell) {
-    var wroteSequence = false;
+  void _writeStyles(Cell cell) {
+    var styled = false;
 
     final foreground = cell.foregroundColor;
     if (foreground != null) {
       _output.setForegroundColor(foreground);
-      wroteSequence = true;
+      styled = true;
     }
 
     final background = cell.backgroundColor;
     if (background != null) {
       _output.setBackgroundColor(background);
-      wroteSequence = true;
+      styled = true;
     }
 
-    if (!wroteSequence) {
+    if (!styled) {
       _output.resetStyles();
     }
   }
