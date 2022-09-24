@@ -32,10 +32,9 @@ void main() {
     expect(
       output.toString(),
       '\x1B[2J\n'
-      '\x1B[0m \x1B[0m \x1B[0m \x1B[0m \x1B[0m \n'
-      '\x1B[0mH\x1B[0mE\x1B[0mL\x1B[0mL\x1B[0mO\n'
-      '\x1B[0m \x1B[0m \x1B[0m \x1B[0m \x1B[0m \n',
-      reason: 'Output is inefficient and could be improved',
+      '     \n'
+      'HELLO\n'
+      '     \n',
     );
 
     // Clear capture buffer.
@@ -57,10 +56,9 @@ void main() {
     expect(
       output.toString(),
       '\x1B[2J\n'
-      '\x1B[0m \x1B[0m \x1B[0m \x1B[0m \x1B[0m \n'
-      '\x1B[0mH\x1B[0mE\x1B[0mL\x1B[0mL\x1B[0mO\n'
-      '\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mG\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mR\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mE\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mE\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mN\n',
-      reason: 'Output is inefficient and could be improved',
+      '     \n'
+      'HELLO\n'
+      '\x1B[0m\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mGREEN\n',
     );
   });
 }
