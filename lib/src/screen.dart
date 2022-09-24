@@ -39,39 +39,62 @@ class _Screen extends Buffer implements Screen {
 
   @override
   void update() {
+    // If we more carefully tracked what was mutated since the last update,
+    // we could technically avoid this step as well - however that would mean
+    // the buffer would need to more complex.
+    //
+    // In practice, this optimization is likely not worth it, but YMMV.
     _output.clearScreen();
+    const newLineChar = 0xa;
+
+    // We assume that we start with no foreground or background colors.
+    Color? foreground;
+    Color? background;
 
     for (var i = 0; i < height; i++) {
-      _output.writeByte(0xa);
+      _output.writeByte(newLineChar);
       for (var j = 0; j < width; j++) {
         final cell = get(j, i);
-        _writeStyles(cell);
+        _writeStyles(
+          cell,
+          previousForeground: foreground,
+          previousBackground: background,
+        );
+        foreground = cell.foregroundColor;
+        background = cell.backgroundColor;
         _output.writeByte(cell.character);
       }
     }
 
     _output
-      ..writeByte(0xa)
+      ..writeByte(newLineChar)
       ..flush();
   }
 
-  void _writeStyles(Cell cell) {
-    var styled = false;
+  void _writeStyles(
+    Cell cell, {
+    required Color? previousForeground,
+    required Color? previousBackground,
+  }) {
+    var resetStyles = false;
 
     final foreground = cell.foregroundColor;
-    if (foreground != null) {
-      _output.setForegroundColor(foreground);
-      styled = true;
+    if (foreground == null && previousForeground != null) {
+      _output.resetStyles();
+      resetStyles = true;
     }
 
     final background = cell.backgroundColor;
-    if (background != null) {
-      _output.setBackgroundColor(background);
-      styled = true;
+    if (!resetStyles && background == null && previousBackground != null) {
+      _output.resetStyles();
     }
 
-    if (!styled) {
-      _output.resetStyles();
+    if (foreground != null && foreground != previousForeground) {
+      _output.setForegroundColor(foreground);
+    }
+
+    if (background != null && background != previousBackground) {
+      _output.setBackgroundColor(background);
     }
   }
 }

@@ -1,5 +1,32 @@
 # CHANGELOG
 
+## 0.3.1
+
+Applied basic optimizations to ANSI escape code screens.
+
+```dart
+// Before
+screen.print('GREEN', 0, 2, foreground: green, background: blue);
+screen.update();
+```
+
+... produced:
+
+```txt
+\x1B[2J\n
+\x1B[0m \x1B[0m \x1B[0m \x1B[0m \x1B[0m\n
+\x1B[0mH\x1B[0mE\x1B[0mL\x1B[0mL\x1B[0mO\n
+      \x1B[38;2;0;255;0m\x1B[48;2;0;0;255mG\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mR\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mE\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mE\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mN\n
+```
+
+... and after the optimizations:
+
+```txt
+\x1B[2J\n
+      \n
+\x1B[0m\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mGREEN\n
+```
+
 ## 0.3.0
 
 In accordance with our [design](DESIGN.md), any features that are not

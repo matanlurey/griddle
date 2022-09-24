@@ -32,10 +32,9 @@ void main() {
     expect(
       output.toString(),
       '\x1B[2J\n'
-      '\x1B[0m \x1B[0m \x1B[0m \x1B[0m \x1B[0m \n'
-      '\x1B[0mH\x1B[0mE\x1B[0mL\x1B[0mL\x1B[0mO\n'
-      '\x1B[0m \x1B[0m \x1B[0m \x1B[0m \x1B[0m \n',
-      reason: 'Output is inefficient and could be improved',
+      '     \n'
+      'HELLO\n'
+      '     \n',
     );
 
     // Clear capture buffer.
@@ -57,10 +56,59 @@ void main() {
     expect(
       output.toString(),
       '\x1B[2J\n'
-      '\x1B[0m \x1B[0m \x1B[0m \x1B[0m \x1B[0m \n'
-      '\x1B[0mH\x1B[0mE\x1B[0mL\x1B[0mL\x1B[0mO\n'
-      '\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mG\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mR\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mE\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mE\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mN\n',
-      reason: 'Output is inefficient and could be improved',
+      '     \n'
+      'HELLO\n'
+      '\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mGREEN\n',
+    );
+  });
+
+  test('Screen.display should reset (foreground) styles when necessary', () {
+    const blue = Color.fromRGB(0x00, 0x00, 0xFF);
+    final output = StringBuffer();
+    final screen = Screen.display(
+      Display.fromAnsiTerminal(
+        output,
+        width: () => 5,
+        height: () => 2,
+      ),
+    );
+
+    // Print a message on the first and second lines.
+    screen.print('HELLO', 0, 0, foreground: blue);
+    screen.print('WORLD', 0, 1);
+    screen.update();
+
+    // Check encoded details.
+    expect(
+      output.toString(),
+      '\x1B[2J\n'
+      '\x1B[38;2;0;0;255mHELLO\n'
+      '\x1B[0mWORLD\n',
+    );
+  });
+
+  test('Screen.display should reset (background) styles when necessary', () {
+    const blue = Color.fromRGB(0x00, 0x00, 0xFF);
+    final output = StringBuffer();
+    final screen = Screen.display(
+      Display.fromAnsiTerminal(
+        output,
+        width: () => 5,
+        height: () => 2,
+      ),
+    );
+
+    // Print a message on the first and second lines.
+    screen.print('HELLO', 0, 0, background: blue);
+    screen.print('WORLD', 0, 1);
+    screen.update();
+
+    // Check encoded details.
+    expect(
+      output.toString(),
+      '\x1B[2J\n'
+      '\x1B[48;2;0;0;255mHELLO\n'
+      '\x1B[0mWORLD\n',
     );
   });
 }
