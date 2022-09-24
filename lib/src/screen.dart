@@ -79,13 +79,13 @@ class _Screen extends Buffer implements Screen {
     var resetStyles = false;
 
     final foreground = cell.foregroundColor;
-    if ((foreground == null) != (previousForeground == null)) {
+    if (foreground == null && previousForeground != null) {
       _output.resetStyles();
       resetStyles = true;
     }
 
     final background = cell.backgroundColor;
-    if (!resetStyles && (foreground == null) != (previousForeground == null)) {
+    if (!resetStyles && background == null && previousBackground != null) {
       _output.resetStyles();
     }
 

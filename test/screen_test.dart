@@ -61,4 +61,29 @@ void main() {
       '\x1B[0m\x1B[38;2;0;255;0m\x1B[48;2;0;0;255mGREEN\n',
     );
   });
+
+  test('Screen.display should reset styles when necessary', () {
+    const blue = Color.fromRGB(0x00, 0x00, 0xFF);
+    final output = StringBuffer();
+    final screen = Screen.display(
+      Display.fromAnsiTerminal(
+        output,
+        width: () => 5,
+        height: () => 2,
+      ),
+    );
+
+    // Print a message on the first and second lines.
+    screen.print('HELLO', 0, 0, foreground: blue);
+    screen.print('WORLD', 0, 1);
+    screen.update();
+
+    // Check encoded details.
+    expect(
+      output.toString(),
+      '\x1B[2J\n'
+      '\x1B[38;2;0;0;255mHELLO\n'
+      '\x1B[0mWORLD\n',
+    );
+  });
 }
