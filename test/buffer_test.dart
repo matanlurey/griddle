@@ -31,7 +31,7 @@ void main() {
 
       const width = 3;
       const height = 4;
-      final buffer = Buffer(width, height);
+      final buffer = WritableBuffer(width, height);
 
       for (var y = 0; y < height; y++) {
         for (var x = 0; x < width; x++) {
@@ -112,14 +112,14 @@ void main() {
     });
 
     group('resize', () {
-      late Buffer buffer;
+      late WritableBuffer buffer;
       final x = Cell('X');
 
       // X X X
       // X X X
       // X X X
       setUp(() {
-        buffer = Buffer(3, 3, initialCell: x);
+        buffer = WritableBuffer(3, 3, initialCell: x);
       });
 
       test('should have no effect if neither width or height changes', () {
@@ -244,7 +244,7 @@ void main() {
     test('should fail setting cells outside of bounds', () {
       // [i=0 | 0, 0] [i=1 | 1, 0]
       // [i=2 | 0, 1] [i=3 | 1, 1]
-      final buffer = Buffer(2, 2);
+      final buffer = WritableBuffer(2, 2);
 
       expect(() => buffer.set(-1, 0, Cell('X')), throwsRangeError);
       expect(() => buffer.set(0, -1, Cell('X')), throwsRangeError);
@@ -256,13 +256,13 @@ void main() {
     });
 
     test('should set cells by coordinate pair', () {
-      final buffer = Buffer(2, 1)..set(0, 0, Cell('X'));
+      final buffer = WritableBuffer(2, 1)..set(0, 0, Cell('X'));
 
       expect(buffer.toList(), [Cell('X'), Cell.blank]);
     });
 
     test('should fail at setting cells by index outside of bounds', () {
-      final buffer = Buffer(2, 1);
+      final buffer = WritableBuffer(2, 1);
 
       expect(() => buffer[-1] = Cell('X'), throwsRangeError);
       expect(() => buffer[2] = Cell('X'), throwsRangeError);
@@ -272,14 +272,14 @@ void main() {
     });
 
     test('should set cells by index', () {
-      final buffer = Buffer(2, 1)..[0] = Cell('X');
+      final buffer = WritableBuffer(2, 1)..[0] = Cell('X');
 
       expect(buffer.toList(), [Cell('X'), Cell.blank]);
     });
 
     test('should fill a rectanglular region with a color', () {
       final blue = Color.fromRGB(0x00, 0x00, 0xFF);
-      final buffer = Buffer(3, 3);
+      final buffer = WritableBuffer(3, 3);
 
       buffer.fill(
         x: 1,
@@ -301,7 +301,7 @@ void main() {
 
     test('should fill a rectanglular region with a character', () {
       final charX = 'X'.codeUnitAt(0);
-      final buffer = Buffer(3, 3);
+      final buffer = WritableBuffer(3, 3);
 
       buffer.fill(
         x: 1,
@@ -320,7 +320,7 @@ void main() {
     });
 
     test('should clear the entire buffer', () {
-      final buffer = Buffer(2, 1, initialCell: Cell('X'));
+      final buffer = WritableBuffer(2, 1, initialCell: Cell('X'));
 
       buffer.clear();
 
@@ -328,7 +328,7 @@ void main() {
     });
 
     test('should print text entirely within the bounds of the buffer', () {
-      final buffer = Buffer(3, 3);
+      final buffer = WritableBuffer(3, 3);
 
       buffer.print('Hi!', 0, 1);
 
@@ -341,7 +341,7 @@ void main() {
     });
 
     test('should ignore text outside of the bounds of the buffer', () {
-      final buffer = Buffer(3, 3);
+      final buffer = WritableBuffer(3, 3);
 
       buffer.print('Hello', 0, 1);
 

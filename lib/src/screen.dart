@@ -11,7 +11,7 @@ part of '../griddle.dart';
 ///
 /// However, [Screen] exists as an abstraction: _extend_ and create your own!
 @sealed
-abstract class Screen implements Buffer {
+abstract class Screen implements WritableBuffer {
   /// Creates a screen that interfaces with an external [screen].
   ///
   /// See [Display.fromAnsiTerminal] and [Display.fromStringBuffer].
@@ -32,7 +32,7 @@ abstract class Screen implements Buffer {
 }
 
 /// Simple implementation of [Screen] that delegates to a [Display].
-class _Screen extends Buffer implements Screen {
+class _Screen extends _Buffer implements Screen {
   final Display _output;
 
   _Screen(this._output) : super(_output.width, _output.height);
