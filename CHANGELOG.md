@@ -14,6 +14,22 @@
   buffer.print('Hello', 0, 1);
   ```
 
+- Added `<WritableBuffer>.fillFrom`, which is _spiritually_ a [`BITBLT`][]:
+
+  ```dart
+  // Pre-define a sprite-like object in an immutable buffer.
+  final other = Buffer.fromMatrix([
+    [Cell('┏'), Cell('┓')],
+    [Cell('┃'), Cell('┃')],
+    [Cell('┗'), Cell('┛')],
+  ]);
+
+  // Copy it into a writable buffer.
+  final buffer = WritableBuffer(5, 5)..fillFrom(other, x: 2, y: 1);
+  ```
+
+[`bitblt`]: https://en.wikipedia.org/wiki/Bit_blit
+
 ## 0.3.1
 
 Applied basic optimizations to ANSI escape code screens.

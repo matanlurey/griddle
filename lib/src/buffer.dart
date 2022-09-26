@@ -238,6 +238,40 @@ abstract class WritableBuffer extends Buffer {
     }
   }
 
+  /// Copies cells from [other] into the provided rectangular region.
+  ///
+  /// This is the spiritual equivalent of something like [`BITBLT`][].
+  ///
+  /// [`BITBLT`]: https://en.wikipedia.org/wiki/Bit_blit
+  ///
+  /// - [width] and [height] default to the width and height of the buffer.
+  /// - [sourceX] and [sourceY] default to `0`.
+  void fillFrom(
+    Buffer other, {
+    required int x,
+    required int y,
+    int sourceX = 0,
+    int sourceY = 0,
+    int? width,
+    int? height,
+  }) {
+    width ??= other.width;
+    height ??= other.height;
+    RangeError.checkNotNegative(x, 'x');
+    RangeError.checkNotNegative(y, 'y');
+    RangeError.checkNotNegative(sourceX, 'sourceX');
+    RangeError.checkNotNegative(sourceY, 'sourceY');
+    RangeError.checkNotNegative(width, 'width');
+    RangeError.checkNotNegative(height, 'height');
+    for (var i = sourceX; i < width + sourceX; i++) {
+      for (var j = sourceY; j < height + sourceY; j++) {
+        final destX = x + i - sourceX;
+        final destY = y + j - sourceY;
+        set(destX, destY, other.get(i, j));
+      }
+    }
+  }
+
   /// Fills the entire screen buffer with the attributes of the given [cell].
   void clear([Cell cell = Cell.blank]) {
     for (var i = 0; i < height; i++) {
