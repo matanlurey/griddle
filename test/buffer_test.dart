@@ -327,6 +327,25 @@ void main() {
       expect(buffer.toList(), everyElement(Cell.blank));
     });
 
+    test('should fill a rectangular region with a buffer', () {
+      final other = Buffer.fromMatrix([
+        [Cell('┏'), Cell('┓')],
+        [Cell('┃'), Cell('┃')],
+        [Cell('┗'), Cell('┛')],
+      ]);
+
+      final buffer = WritableBuffer(5, 5)..fillFrom(other, x: 2, y: 1);
+
+      expect(
+        buffer.toDebugString(),
+        '     \n'
+        '  ┏┓ \n'
+        '  ┃┃ \n'
+        '  ┗┛ \n'
+        '     \n',
+      );
+    });
+
     test('should print text entirely within the bounds of the buffer', () {
       final buffer = WritableBuffer(3, 3);
 
