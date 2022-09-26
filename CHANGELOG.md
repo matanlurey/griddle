@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 0.4.0
+
+- Split `Buffer` into two interfaces: `Buffer` (immutable) and `WritableBuffer`.
+
+  - If you were just using `Buffer` indirectly through `Screen`, no API changes.
+  - If you were creating a `Buffer` and writing to it, use `WritableBuffer` now:
+
+  ```diff
+  - final buffer = Buffer(3, 3);
+  + final buffer = WritableBuffer(3, 3);
+
+  buffer.print('Hello', 0, 1);
+  ```
+
 ## 0.3.1
 
 Applied basic optimizations to ANSI escape code screens.
@@ -89,8 +103,6 @@ completely platform agnostic.
 
 New release with many bug fixes, changes, and [new examples](example/README.md)!
 
-### Backwards Compatible
-
 - Added `Buffer.fromCells` and `Buffer.fromMatrix` as helpful factory methods.
 - Added `<Buffer>.length` as an alias for `<Buffer>.width * <Buffer>.height`.
 - Added `<Buffer>[]` and `<Buffer>[]=` for indexed reads/writes into a buffer.
@@ -108,8 +120,6 @@ New release with many bug fixes, changes, and [new examples](example/README.md)!
   // Newly possible.
   Buffer(3, 3, initialCell: Cell('X'));
   ```
-
-### Breaking Changes
 
 - Terminal output always skips line `0` and starts on line `1` for readability.
 - Fixed a bug where cells were stored as `y * height + x`, not `y * width + x`.

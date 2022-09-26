@@ -55,7 +55,7 @@ abstract class Display {
   /// Returns the width of the output display in characters.
   ///
   /// Screens may (but are not required to) poll this getter to check if the
-  /// size of the display has chand (and to resize internal output buffers as
+  /// size of the display has changed (and to resize internal output buffers as
   /// necessary).
   @experimental
   int get width;
@@ -63,7 +63,7 @@ abstract class Display {
   /// Returns the height of the output display in characters.
   ///
   /// Screens may (but are not required to) poll this getter to check if the
-  /// size of the display has chand (and to resize internal output buffers as
+  /// size of the display has changed (and to resize internal output buffers as
   /// necessary).
   @experimental
   int get height;
@@ -134,7 +134,7 @@ class _UnstyledTextDisplay extends Display {
   void writeByte(int byte) => _output.writeCharCode(byte);
 }
 
-/// A raw screen that supports writing to an ANSI-escape supported terminal.
+/// A display that supports writing to an ANSI-escape supported terminal.
 class _AnsiTerminalDisplay extends Display {
   final StringSink _output;
   final int Function() _width;

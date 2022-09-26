@@ -1,10 +1,10 @@
 part of '../griddle.dart';
 
-/// Stores a mutable 2D buffer of cells.
+/// Stores a 2D buffer of cells.
 ///
-/// A buffer maintains a two-dimensional buffer of [Cell] instances, and
-/// provides methods of manipulating them programatically, such as [fill] and
-/// [print], as well as direct "pixel" access using [get] and [set].
+/// A buffer maintains a two-dimensional representation of [Cell] instances, and
+/// provides methods for querying them programatically, such as [get] or the
+/// bracket operator (`[index]`).
 ///
 /// Virtual buffers are also suitable for _testing_, as well as maintaining a
 /// platform independent stateful view that will later be synchronized to a
@@ -12,10 +12,15 @@ part of '../griddle.dart';
 ///
 /// It is considered invalid to extend, implement, or mix-in this class.
 @sealed
-class Buffer {
-  var _cells = const <Cell>[];
-  var _width = 0;
-  var _height = 0;
+abstract class Buffer {
+  /// Creates a new buffer of the specified [width] and [height].
+  ///
+  /// Initial cells are filled in by [initialCell], dafaulting to [Cell.blank].
+  factory Buffer(
+    int width,
+    int height, {
+    Cell initialCell,
+  }) = WritableBuffer;
 
   /// Creates a new buffer by **copying** a predefined collections of [cells].
   ///
@@ -32,6 +37,90 @@ class Buffer {
   factory Buffer.fromCells(
     Iterable<Cell> cells, {
     required int width,
+  }) = WritableBuffer.fromCells;
+
+  /// Creates a new buffer by **copying** a nested list (2D matrix) of [cells].
+  ///
+  /// **NOTE**: The [List.length] of every nested list must be the same.
+  factory Buffer.fromMatrix(List<List<Cell>> cells) = WritableBuffer.fromMatrix;
+
+  @protected
+  const Buffer._();
+
+  /// Width of the buffer.
+  int get width;
+
+  /// Height of the buffer.
+  int get height;
+
+  /// Total number of cells in the buffer.
+  ///
+  /// Semantically identical to `buffer.width * buffer.height`.
+  int get length => width * height;
+
+  /// Returns whetyher [x] and [y] are considered within bounds of the buffer.
+  bool inBounds(int x, int y) => x >= 0 && y >= 0 && x < width && y < height;
+
+  /// Returns the cell located at ([x], [y]).
+  Cell get(int x, int y);
+
+  /// Returns the cell located at the specified [index].
+  ///
+  /// See [toList] for how to determine index given an `x`, `y`, or use [get].
+  Cell operator [](int index);
+
+  /// Returns the buffer as a list of cells.
+  ///
+  /// This method can be considered the _opposite_ of [Buffer.fromCells].
+  ///
+  /// Cells are mapped where:
+  /// ```
+  /// final cells = buffer.toList();
+  ///
+  /// // Reads (x, y) from the list.
+  /// final index = y * width + x;
+  /// cells[index];
+  /// ```
+  List<Cell> toList();
+
+  /// Returns the buffer as a nested list (2D matrix) of cells.
+  ///
+  /// This method can be considered the _opposite_ of [Buffer.fromMatrix].
+  List<List<Cell>> toMatrix();
+
+  /// Returns a plain-text preview of the underlying buffer.
+  ///
+  /// For typical usage see [Screen.display] and [Display.fromStringBuffer].
+  String toDebugString();
+}
+
+/// Stores a writable 2D buffer of cells.
+///
+/// A writble buffer maintains a two-dimensional buffer of [Cell] instances, and
+/// provides methods of manipulating them programatically, such as [fill] and
+/// [print], as well as direct "pixel" access using [get] and [set].
+///
+/// Virtual buffers are also suitable for _testing_, as well as maintaining a
+/// platform independent stateful view that will later be synchronized to a
+/// platform-specific view.
+///
+/// It is considered invalid to extend, implement, or mix-in this class.
+abstract class WritableBuffer extends Buffer {
+  /// Creates a new buffer by **copying** a predefined collections of [cells].
+  ///
+  /// Cells are considered to be filled from top-left to bottom-right.
+  ///
+  /// For example, a [width] of 2 would infer a height of 3 with 6 elements:
+  /// ```txt
+  /// (0, 0) (1, 0)
+  /// (0, 1) (1, 1)
+  /// (0, 2) (1, 2)
+  /// ```
+  ///
+  /// **NOTE**: [width] must be able to evenly subdivide the length of [cells].
+  factory WritableBuffer.fromCells(
+    Iterable<Cell> cells, {
+    required int width,
   }) {
     if (cells.isEmpty) {
       throw ArgumentError.value(cells, 'cells', 'Must be non-empty');
@@ -43,7 +132,7 @@ class Buffer {
     final divisions = list.length / width;
     final height = divisions.floor();
     if (divisions == height) {
-      return Buffer._(list, width, height);
+      return _Buffer._(list, width, height);
     } else {
       throw ArgumentError.value(
         width,
@@ -56,7 +145,7 @@ class Buffer {
   /// Creates a new buffer by **copying** a nested list (2D matrix) of [cells].
   ///
   /// **NOTE**: The [List.length] of every nested list must be the same.
-  factory Buffer.fromMatrix(List<List<Cell>> cells) {
+  factory WritableBuffer.fromMatrix(List<List<Cell>> cells) {
     if (cells.isEmpty) {
       throw ArgumentError.value(cells, 'cells', 'Must be non-empty');
     }
@@ -72,7 +161,7 @@ class Buffer {
         );
       }
     }
-    return Buffer._(
+    return _Buffer._(
       List.of(cells.expand((e) => e), growable: false),
       width,
       height,
@@ -82,44 +171,14 @@ class Buffer {
   /// Creates a new buffer of the specified [width] and [height].
   ///
   /// Initial cells are filled in by [initialCell], dafaulting to [Cell.blank].
-  Buffer(
+  factory WritableBuffer(
     int width,
     int height, {
-    Cell initialCell = Cell.blank,
-  }) {
-    resize(
-      width: width,
-      height: height,
-      expand: initialCell,
-    );
-    // It should be impossible for the following to ever be hit, we only add
-    // the message to make iterating on the buffer class internally easier or
-    // if we create internal subtypes in the future.
-    //
-    // coverage:ignore-start
-    assert(
-      _cells.isNotEmpty,
-      'Cells should represent a non-empty grid: $_cells',
-    );
-    // coverage:ignore-end
-  }
+    Cell initialCell,
+  }) = _Buffer;
 
-  /// Creates a buffer assuming appropriate checks were already peformed.
-  Buffer._(this._cells, this._width, this._height) {
-    assert(() {
-      _checkWidthAndHeight(width, height);
-      return true;
-    }(), 'Sanity check that this constructor is used properly');
-  }
-
-  void _checkWidthAndHeight(int width, int height) {
-    if (width < 1) {
-      throw ArgumentError.value(width, 'width', 'width must be >= 1');
-    }
-    if (height < 1) {
-      throw ArgumentError.value(height, 'height', 'height must be >= 1');
-    }
-  }
+  @protected
+  const WritableBuffer._() : super._();
 
   /// Resizes the buffer to given [width] and/or [height].
   ///
@@ -133,78 +192,15 @@ class Buffer {
     int? width,
     int? height,
     Cell expand = Cell.blank,
-  }) {
-    final oldWidth = this.width;
-    final oldHeight = this.height;
-
-    width ??= oldWidth;
-    height ??= oldHeight;
-    _checkWidthAndHeight(width, height);
-
-    if (width == oldWidth && height == oldHeight) {
-      return;
-    }
-
-    // Create new cells, or cells to be soon replaced with existing cells.
-    final newCells = List.filled(width * height, expand);
-
-    // Move cells from the previous cells to the new cells.
-    for (var y = 0; y < oldHeight; y++) {
-      for (var x = 0; x < oldWidth; x++) {
-        if (y >= height || x >= width) {
-          continue;
-        }
-        newCells[y * width + x] = _cells[y * oldWidth + x];
-      }
-    }
-
-    _width = width;
-    _height = height;
-    _cells = newCells;
-  }
-
-  /// Width of the buffer.
-  int get width => _width;
-
-  /// Height of the buffer.
-  int get height => _height;
-
-  /// Total number of cells in the buffer.
-  ///
-  /// Semantically identical to `buffer.width * buffer.height`.
-  int get length => width * height;
-
-  /// Returns whetyher [x] and [y] are considered within bounds of the buffer.
-  bool inBounds(int x, int y) => x >= 0 && y >= 0 && x < width && y < height;
-
-  /// Converts [x] and [y] to an index within [_cells].
-  ///
-  /// If either [x] or [y] are out of bounds an error is thrown.
-  int _toIndexChecked(int x, int y) {
-    RangeError.checkValueInInterval(x, 0, width - 1, 'x');
-    RangeError.checkValueInInterval(y, 0, height - 1, 'y');
-    return y * width + x;
-  }
-
-  /// Returns the cell located at ([x], [y]).
-  Cell get(int x, int y) => _cells[_toIndexChecked(x, y)];
+  });
 
   /// Sets the cell located at ([x], [y]) to [value].
-  void set(int x, int y, Cell value) {
-    _cells[_toIndexChecked(x, y)] = value;
-  }
-
-  /// Returns the cell located at the specified [index].
-  ///
-  /// See [toList] for how to determine index given an `x`, `y`, or use [get].
-  Cell operator [](int index) => _cells[index];
+  void set(int x, int y, Cell value);
 
   /// Sets the cell located at the specified [index] to [cell].
   ///
   /// See [toList] for how to determine index given an `x`, `y`, or use [set].
-  void operator []=(int index, Cell cell) {
-    _cells[index] = cell;
-  }
+  void operator []=(int index, Cell cell);
 
   /// Fills a rectangular region of the screen with the given attributes.
   ///
@@ -279,24 +275,124 @@ class Buffer {
       }
     }
   }
+}
 
-  /// Returns the buffer as a list of cells.
+/// Concrete implementation of both [Buffer] and [WritableBuffer].
+///
+/// ## Implementation Notes
+///
+/// In the future it might make sense to create a more packed representation of
+/// an immutable buffer, but for now this at least separates the public APIs of
+/// a normal buffer and a writable one (both for future refactors and so users
+/// can pick the appropriate abstractions - i.e. immutable non-animated sprites
+/// can refer to an immutable buffer of cells).
+class _Buffer extends WritableBuffer {
+  var _cells = const <Cell>[];
+  var _width = 0;
+  var _height = 0;
+
+  /// Creates a new buffer of the specified [width] and [height].
   ///
-  /// This method can be considered the _opposite_ of [Buffer.fromCells].
+  /// Initial cells are filled in by [initialCell], dafaulting to [Cell.blank].
+  _Buffer(
+    int width,
+    int height, {
+    Cell initialCell = Cell.blank,
+  }) : super._() {
+    resize(
+      width: width,
+      height: height,
+      expand: initialCell,
+    );
+  }
+
+  /// Creates a buffer assuming appropriate checks were already peformed.
+  _Buffer._(this._cells, this._width, this._height) : super._() {
+    assert(() {
+      _checkWidthAndHeight(width, height);
+      return true;
+    }(), 'Sanity check that this constructor is used properly');
+  }
+
+  void _checkWidthAndHeight(int width, int height) {
+    if (width < 1) {
+      throw ArgumentError.value(width, 'width', 'width must be >= 1');
+    }
+    if (height < 1) {
+      throw ArgumentError.value(height, 'height', 'height must be >= 1');
+    }
+  }
+
+  @override
+  void resize({
+    int? width,
+    int? height,
+    Cell expand = Cell.blank,
+  }) {
+    final oldWidth = this.width;
+    final oldHeight = this.height;
+
+    width ??= oldWidth;
+    height ??= oldHeight;
+    _checkWidthAndHeight(width, height);
+
+    if (width == oldWidth && height == oldHeight) {
+      return;
+    }
+
+    // Create new cells, or cells to be soon replaced with existing cells.
+    final newCells = List.filled(width * height, expand);
+
+    // Move cells from the previous cells to the new cells.
+    for (var y = 0; y < oldHeight; y++) {
+      for (var x = 0; x < oldWidth; x++) {
+        if (y >= height || x >= width) {
+          continue;
+        }
+        newCells[y * width + x] = _cells[y * oldWidth + x];
+      }
+    }
+
+    _width = width;
+    _height = height;
+    _cells = newCells;
+  }
+
+  @override
+  int get width => _width;
+
+  @override
+  int get height => _height;
+
+  /// Converts [x] and [y] to an index within [_cells].
   ///
-  /// Cells are mapped where:
-  /// ```
-  /// final cells = buffer.toList();
-  ///
-  /// // Reads (x, y) from the list.
-  /// final index = y * width + x;
-  /// cells[index];
-  /// ```
+  /// If either [x] or [y] are out of bounds an error is thrown.
+  int _toIndexChecked(int x, int y) {
+    RangeError.checkValueInInterval(x, 0, width - 1, 'x');
+    RangeError.checkValueInInterval(y, 0, height - 1, 'y');
+    return y * width + x;
+  }
+
+  @override
+  Cell get(int x, int y) => _cells[_toIndexChecked(x, y)];
+
+  @override
+  void set(int x, int y, Cell value) {
+    _cells[_toIndexChecked(x, y)] = value;
+  }
+
+  @override
+  Cell operator [](int index) => _cells[index];
+
+  @override
+  void operator []=(int index, Cell cell) {
+    _cells[index] = cell;
+  }
+
+  @override
   List<Cell> toList() => List.of(_cells);
 
-  /// Returns the buffer as a nested list (2D matrix) of cells.
-  ///
-  /// This method can be considered the _opposite_ of [Buffer.fromMatrix].
+  @override
   List<List<Cell>> toMatrix() {
     return [
       for (var y = 0; y < height; y++)
@@ -304,9 +400,7 @@ class Buffer {
     ];
   }
 
-  /// Returns a plain-text preview of the underlying buffer.
-  ///
-  /// For typical usage see [Screen.display] and [Display.fromStringBuffer].
+  @override
   String toDebugString() {
     final buffer = StringBuffer();
     for (var y = 0; y < height; y++) {
