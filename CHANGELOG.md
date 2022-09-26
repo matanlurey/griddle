@@ -2,7 +2,14 @@
 
 ## 0.4.0
 
-- Split `Buffer` into two interfaces: `Buffer` (immutable) and `WritableBuffer`.
+- **BREAKING**: `Display.fromAnsiTerminal` reports `height` as `height - 1`.
+
+  This is because attempting to write the entire height of the terminal causes
+  scrollback in most terminals, which in practice means the first line of every
+  UI is accidentally hidden.
+
+- **BREAKING**: Split `Buffer` into two interfaces: `Buffer` (immutable) and
+  `WritableBuffer`.
 
   - If you were just using `Buffer` indirectly through `Screen`, no API changes.
   - If you were creating a `Buffer` and writing to it, use `WritableBuffer` now:

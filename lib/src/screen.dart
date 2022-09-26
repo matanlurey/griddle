@@ -45,11 +45,11 @@ class _Screen extends _Buffer implements Screen {
     //
     // In practice, this optimization is likely not worth it, but YMMV.
     _output.clearScreen();
-    const newLineChar = 0xa;
 
     // We assume that we start with no foreground or background colors.
     Color? foreground;
     Color? background;
+    const newLineChar = 0xa;
 
     for (var i = 0; i < height; i++) {
       _output.writeByte(newLineChar);

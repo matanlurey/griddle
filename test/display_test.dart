@@ -51,12 +51,24 @@ void main() {
       );
     });
 
+    test('reports its height as height - 1', () {
+      expect(
+        display.height,
+        23,
+        reason: 'Avoids scrollback hiding the first line',
+      );
+    });
+
     test('should reflect latest width and height', () {
       width = 100;
       height = 40;
 
       expect(display.width, 100);
-      expect(display.height, 40);
+      expect(
+        display.height,
+        39,
+        reason: 'Avoids scrollback hiding the first line',
+      );
     });
 
     test('should write using ANSI escape codes', () {

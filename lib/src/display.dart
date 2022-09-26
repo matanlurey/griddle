@@ -35,6 +35,14 @@ abstract class Display {
   /// ```
   ///
   /// For a display without ANSI escapes, see [Display.fromStringBuffer].
+  ///
+  /// **NOTE**: The [height] returned by [Display.height] will be `- 1` in order
+  /// to avoid scrollback in most terminals. If you are confident that you want
+  /// the entire height of a terminal rendered, add `1` to the value returned by
+  /// [height], i.e.:
+  /// ```dart
+  /// height: () => actualHeight + 1
+  /// ```
   factory Display.fromAnsiTerminal(
     StringSink output, {
     required int Function() width,
@@ -167,7 +175,7 @@ class _AnsiTerminalDisplay extends Display {
   int get width => _width();
 
   @override
-  int get height => _height();
+  int get height => _height() - 1;
 
   @override
   void resetStyles() => _ansiOut.resetStyles();

@@ -12,7 +12,7 @@ void main() {
       Display.fromAnsiTerminal(
         output,
         width: () => 5,
-        height: () => 3,
+        height: () => 4,
       ),
     );
 
@@ -69,7 +69,7 @@ void main() {
       Display.fromAnsiTerminal(
         output,
         width: () => 5,
-        height: () => 2,
+        height: () => 3,
       ),
     );
 
@@ -94,7 +94,7 @@ void main() {
       Display.fromAnsiTerminal(
         output,
         width: () => 5,
-        height: () => 2,
+        height: () => 3,
       ),
     );
 
