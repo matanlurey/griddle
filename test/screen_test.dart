@@ -13,6 +13,7 @@ void main() {
         output,
         width: () => 5,
         height: () => 4,
+        hideCursor: false,
       ),
     );
 
@@ -70,6 +71,7 @@ void main() {
         output,
         width: () => 5,
         height: () => 3,
+        hideCursor: false,
       ),
     );
 
@@ -95,6 +97,7 @@ void main() {
         output,
         width: () => 5,
         height: () => 3,
+        hideCursor: false,
       ),
     );
 

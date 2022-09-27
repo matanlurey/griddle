@@ -34,6 +34,8 @@ abstract class Display {
   /// }
   /// ```
   ///
+  /// To hide the cursor until [close] is invoked, set [hideCursor] to `true`.
+  ///
   /// For a display without ANSI escapes, see [Display.fromStringBuffer].
   ///
   /// **NOTE**: The [height] returned by [Display.height] will be `- 1` in order
@@ -47,6 +49,7 @@ abstract class Display {
     StringSink output, {
     required int Function() width,
     required int Function() height,
+    bool hideCursor,
   }) = _AnsiTerminalDisplay;
 
   /// Creates a minimal display that writes plain text to a string buffer.
@@ -59,6 +62,11 @@ abstract class Display {
     int width,
     int height,
   }) = _UnstyledTextDisplay;
+
+  /// Closes the display, which makes it an error to send further commands.
+  ///
+  /// Some displays (i.e. [Display.fromAnsiTerminal]) may perform cleanup.
+  void close();
 
   /// Returns the width of the output display in characters.
   ///
@@ -85,6 +93,12 @@ abstract class Display {
   /// Resets all output styling applied.
   void resetStyles();
 
+  /// Hides the cursor, if supported, otherwise does nothing.
+  void hideCursor();
+
+  /// Shows the cursor, if supported, otherwise does nothing.
+  void showCursor();
+
   /// Writes the provided [byte] as a character to the terminal output.
   void writeByte(int byte);
 
@@ -108,17 +122,35 @@ class _UnstyledTextDisplay extends Display {
   /// Temporarily holds output until [flush] is used to move it to [_output].
   final _bufferedOutput = StringBuffer();
 
+  var _isClosed = false;
+
   _UnstyledTextDisplay(
     this._output, {
     this.width = 80,
     this.height = 24,
   });
 
+  void _throwIfClosed() {
+    if (_isClosed) {
+      throw StateError('Display already closed');
+    }
+  }
+
   @override
-  void clearScreen() => _output.clear();
+  void close() {
+    _throwIfClosed();
+    _isClosed = true;
+  }
+
+  @override
+  void clearScreen() {
+    _throwIfClosed();
+    _output.clear();
+  }
 
   @override
   void flush() {
+    _throwIfClosed();
     _output.write(_bufferedOutput);
     _bufferedOutput.clear();
   }
@@ -130,16 +162,35 @@ class _UnstyledTextDisplay extends Display {
   final int height;
 
   @override
-  void resetStyles() {}
+  void hideCursor() {
+    _throwIfClosed();
+  }
 
   @override
-  void setBackgroundColor(Color color) {}
+  void showCursor() {
+    _throwIfClosed();
+  }
 
   @override
-  void setForegroundColor(Color color) {}
+  void resetStyles() {
+    _throwIfClosed();
+  }
 
   @override
-  void writeByte(int byte) => _output.writeCharCode(byte);
+  void setBackgroundColor(Color color) {
+    _throwIfClosed();
+  }
+
+  @override
+  void setForegroundColor(Color color) {
+    _throwIfClosed();
+  }
+
+  @override
+  void writeByte(int byte) {
+    _throwIfClosed();
+    _output.writeCharCode(byte);
+  }
 }
 
 /// A display that supports writing to an ANSI-escape supported terminal.
@@ -151,25 +202,53 @@ class _AnsiTerminalDisplay extends Display {
   /// Temporarily holds output until [flush] is used to move it to [_output].
   final _bufferedOutput = StringBuffer();
   late final _ansiOut = AnsiWriter.from(_bufferedOutput);
+  var _isClosed = false;
 
   _AnsiTerminalDisplay(
     this._output, {
     required int Function() width,
     required int Function() height,
+    bool hideCursor = true,
   })  : _width = width,
-        _height = height;
+        _height = height {
+    if (hideCursor) {
+      this.hideCursor();
+    }
+  }
+
+  void _throwIfClosed() {
+    if (_isClosed) {
+      throw StateError('Display already closed');
+    }
+  }
 
   @override
-  void clearScreen() => _ansiOut.clearScreen();
+  void close() {
+    _throwIfClosed();
+    _bufferedOutput.clear();
+    showCursor();
+    flush();
+    _isClosed = true;
+  }
+
+  @override
+  void clearScreen() {
+    _throwIfClosed();
+    _ansiOut.clearScreen();
+  }
 
   @override
   void flush() {
+    _throwIfClosed();
     _output.write(_bufferedOutput);
     _bufferedOutput.clear();
   }
 
   @override
-  void writeByte(int byte) => _ansiOut.writeCharCode(byte);
+  void writeByte(int byte) {
+    _throwIfClosed();
+    _ansiOut.writeCharCode(byte);
+  }
 
   @override
   int get width => _width();
@@ -178,11 +257,32 @@ class _AnsiTerminalDisplay extends Display {
   int get height => _height() - 1;
 
   @override
-  void resetStyles() => _ansiOut.resetStyles();
+  void hideCursor() {
+    _throwIfClosed();
+    _ansiOut.hideCursor();
+  }
 
   @override
-  void setBackgroundColor(Color color) => _ansiOut.setBackgroundColor24(color);
+  void showCursor() {
+    _throwIfClosed();
+    _ansiOut.showCursor();
+  }
 
   @override
-  void setForegroundColor(Color color) => _ansiOut.setForegroundColor24(color);
+  void resetStyles() {
+    _throwIfClosed();
+    _ansiOut.resetStyles();
+  }
+
+  @override
+  void setBackgroundColor(Color color) {
+    _throwIfClosed();
+    _ansiOut.setBackgroundColor24(color);
+  }
+
+  @override
+  void setForegroundColor(Color color) {
+    _throwIfClosed();
+    _ansiOut.setForegroundColor24(color);
+  }
 }
