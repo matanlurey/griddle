@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 0.5.0
+
+- **BREAKING**: `Display.fromAnsiTerminal` hides the cursor by default.
+
+  In order to show the cursor either:
+
+  - Set `hideCursor: false` in the constructor.
+  - Call `<Display>.showCursor()`.
+
+- **BREAKING**: Added `<Display>.close`, which may optionally performn cleanup.
+
+  For `Display.fromAnsiTerminal`, `close` resets the cursor (make it visible).
+
+- Added `<Display>.hideCursor`, `<Display>.showCursor`.
+
 ## 0.4.0
 
 - **BREAKING**: `Display.fromAnsiTerminal` reports `height` as `height - 1`.

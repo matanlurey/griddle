@@ -27,9 +27,15 @@ void main() {
     // Setting colors and resetting styles should have had no effect!
     expect(output.toString(), 'Hello World!');
 
-    // Try "clearing" the screen.
+    // Try "clearing" the screen and other non-effects.
     display.clearScreen();
+    display.hideCursor();
+    display.showCursor();
     expect(output.toString(), isEmpty);
+
+    // Close
+    display.close();
+    expect(display.flush, throwsStateError);
   });
 
   group('fromAnsiTerminal provides a simple terminal "display" that', () {
@@ -48,7 +54,35 @@ void main() {
         output,
         width: () => width,
         height: () => height,
+        hideCursor: false,
       );
+    });
+
+    test('hide/shows the cursor on start and close', () {
+      display = Display.fromAnsiTerminal(
+        output,
+        width: () => width,
+        height: () => height,
+        hideCursor: true,
+      );
+
+      final capture = _SimpleAnsiListener();
+      final reader = AnsiReader(capture);
+
+      display.flush();
+      reader.read('$output');
+      expect(capture.wasHideCursor, isTrue);
+      output.clear();
+
+      display.close();
+      reader.read('$output');
+      expect(capture.wasShowCursor, isTrue);
+    });
+
+    test('should fail if closed', () {
+      display.close();
+
+      expect(display.flush, throwsStateError);
     });
 
     test('reports its height as height - 1', () {
@@ -140,6 +174,8 @@ class _SimpleAnsiListener extends AnsiListener {
   late Color? backgroundColor24;
   late Color? foregroundColor24;
   late List<String> wroteText;
+  late bool wasHideCursor;
+  late bool wasShowCursor;
 
   _SimpleAnsiListener() {
     resetAssertions();
@@ -149,11 +185,22 @@ class _SimpleAnsiListener extends AnsiListener {
     wasResetStyles = wasClearScreen = false;
     backgroundColor24 = foregroundColor24 = null;
     wroteText = [];
+    wasHideCursor = wasShowCursor = false;
   }
 
   @override
   void write(String text) {
     wroteText.add(text);
+  }
+
+  @override
+  void hideCursor() {
+    wasHideCursor = true;
+  }
+
+  @override
+  void showCursor() {
+    wasShowCursor = true;
   }
 
   @override

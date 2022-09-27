@@ -4,11 +4,12 @@ import 'package:griddle/griddle.dart';
 
 /// A sample application that fills the entire terminal with coordinates.
 void main() {
-  final screen = Screen.display(Display.fromAnsiTerminal(
+  final display = Display.fromAnsiTerminal(
     stdout,
     width: () => stdout.terminalColumns,
     height: () => stdout.terminalLines,
-  ));
+  );
+  final screen = Screen.display(display);
 
   for (var y = 0; y < screen.height; y++) {
     screen.set(0, y, Cell('${y % 10}'));
@@ -18,4 +19,5 @@ void main() {
   }
 
   screen.update();
+  display.close();
 }
